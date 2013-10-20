@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title></title>
+    <script src="libs/jquery.js"></script>
+    <script src="libs/underscore.js"></script>
+    <script src="libs/backbone.js"></script>
+</head>
+<body>
+<div class="wrapper">
+    Property Cross
+    <div class="main_screen">
+    </div>
+</div>
+
+<script type="text/template" id="main_screen">
+    <h1>HELLLO</h1>
+    <input type="text" id="place"/>
+    <button id="search">Search</button>
+</script>
+</body>
+<script type="text/javascript">
+    var SearchCities = Backbone.Collection.extend({
+        url: 'http://api.nestoria.co.uk/api?country=uk&pretty=1&action=search_listings&encoding=json&listing_type=buy&page=1'
+    });
+    var MainScreen = Backbone.View.extend({
+        el: '.main_screen',
+        render: function(){
+            var template = _.template($('#main_screen').html());
+            this.$el.html(template)
+        },
+        events: {
+            'click #search': 'search'
+        },
+        initialize: function(){
+            this.model = new SearchCities();
+        },
+        search: function(){
+            var place = this.$el.find('#place').val();
+            this.model.fetch({
+                data: {place_name: place},
+                success: function(resp){
+                    console.log(resp)
+                }
+            })
+        }
+    });
+    var Router = Backbone.Router.extend({
+        routes: {
+            '' : 'home'
+        }
+    });
+    var router = new Router();
+    var mainScreen = new MainScreen();
+    router.on('route:home', function(){
+        mainScreen.render();
+    });
+    Backbone.history.start();
+</script>
+</html>

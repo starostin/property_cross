@@ -17,11 +17,17 @@
     <h1>HELLLO</h1>
     <input type="text" id="place"/>
     <button id="search">Search</button>
+    <button id="show">Show</button>
 </script>
 </body>
 <script type="text/javascript">
+//    var City = Backbone.Model.extend({
+//        initialize: function(elem){
+//        }
+//    });
     var SearchCities = Backbone.Collection.extend({
-        url: 'http://api.nestoria.co.uk/api?country=uk&pretty=1&action=search_listings&encoding=json&listing_type=buy&page=1'
+        url: 'http://api.nestoria.co.uk/api?country=uk&pretty=1&action=search_listings&encoding=json&listing_type=buy&page=1',
+//        model: City
     });
     var MainScreen = Backbone.View.extend({
         el: '.main_screen',
@@ -30,17 +36,24 @@
             this.$el.html(template)
         },
         events: {
-            'click #search': 'search'
+            'click #search': 'search',
+            'click #show': 'show'
         },
         initialize: function(){
             this.model = new SearchCities();
         },
+        show: function(){
+            console.log(this.model)
+        },
         search: function(){
             var place = this.$el.find('#place').val();
+
             this.model.fetch({
                 data: {place_name: place},
-                success: function(resp){
+                success: function(col, resp){
+                    console.log('-=-=-=-=--==-=-=-=-')
                     console.log(resp)
+                    col.reset(resp.response)
                 }
             })
         }

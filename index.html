@@ -21,14 +21,15 @@
 </script>
 </body>
 <script type="text/javascript">
-//    var City = Backbone.Model.extend({
-//        initialize: function(elem){
-//        }
-//    });
+    var City = Backbone.Model.extend();
     var SearchCities = Backbone.Collection.extend({
         url: 'http://api.nestoria.co.uk/api?country=uk&pretty=1&action=search_listings&encoding=json&listing_type=buy&page=1',
-//        model: City
+        model: City,
+        parse: function(resp, xhr){
+            return resp.response.listings;
+        }
     });
+    var z = new SearchCities();
     var MainScreen = Backbone.View.extend({
         el: '.main_screen',
         render: function(){
@@ -44,16 +45,19 @@
         },
         show: function(){
             console.log(this.model)
+            console.log(localStorage.getItem('place'))
+            console.log(localStorage.getItem('count'))
         },
         search: function(){
             var place = this.$el.find('#place').val();
-
             this.model.fetch({
                 data: {place_name: place},
                 success: function(col, resp){
-                    console.log('-=-=-=-=--==-=-=-=-')
+                    console.log('==========================')
+                    console.log(col)
                     console.log(resp)
-                    col.reset(resp.response)
+                    localStorage.setItem('place', place)
+                    localStorage.setItem('count', resp.response.total_results)
                 }
             })
         }

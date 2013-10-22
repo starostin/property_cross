@@ -18,7 +18,31 @@
     <input type="text" id="place"/>
     <button id="search">Search</button>
     <button id="show">Show</button>
+    <% if (error) { %>
+    <h1><%= error%></h1>
+    <% } else if (locations) {%>
+    <ul>
+        <% _.each(locations, function(loc) { %>
+        <li data-place="<% loc.place_name %>"><%= loc.long_title %></li>
+        <% }); %>
+    </ul>
+    <% } else if (recentSearch && recentSearch.length) { %>
+    <ul>
+        <% _.each(recentSearch, function(elem) { %>
+        <li><%= elem.place %> <span>(<%= elem.totalRes %>)</span></li>
+        <% }); %>
+    </ul>
+    <% } %>
 </script>
+
+<script type="text/template" id="list_screen">
+    <ul>
+        <% _.each(listings, function(list) { %>
+        <li><img src="<%= list.thumb_url %>" alt="thumb"/> <%= list.title%> </li>
+        <% }); %>
+    </ul>
+</script>
+
 </body>
 <script type="text/javascript">
 
@@ -36,19 +60,27 @@
     var Locations = Backbone.Collection.extend({
         model: Location
     });
+    var listings = new Listings();
+    var locations = new Locations();
+
 
 
 //    -------------------------------VIEWS--------------------------------
     var MainScreen = Backbone.View.extend({
         el: '.main_screen',
-        render: function(){
-            var template = _.template($('#main_screen').html());
-            this.$el.html(template)
+        template: _.template($('#main_screen').html()),
+        render: function(val){
+            var toTemplate = {recentSearch: this.getRecentSearches() ? this.getRecentSearches() : null, error: null, locations: null};
+            if(val === 'error'){
+                toTemplate.error = 'ERROR!!!';
+            }else if(val === 'locations'){
+                toTemplate.locations = this.locations.toJSON();
+            }
+            this.$el.html(this.template(toTemplate))
         },
-        recentSearches: [],
         initialize: function(){
-            this.listings = new Listings();
-            this.locations = new Locations();
+            this.listings = listings;
+            this.locations = locations;
         },
         events: {
             'click #search': 'search',
@@ -60,22 +92,27 @@
             console.log(this.locations);
             console.log(window.localStorage.getItem('recentSearches'));
         },
-        addToRecentSearches: function (place, totalRes){
-            var recentSearches = JSON.parse(window.localStorage.getItem('recentSearches')),
-                isPlaceThere = true;
-            if(recentSearches && recentSearches.length){
-                recentSearches.forEach(function(obj){
-                    if(obj.place === place){
-                        isPlaceThere = false;
-                    }
-                });
-                if(!isPlaceThere){
-                    return;
+        getRecentSearches: function(){
+            return JSON.parse(window.localStorage.getItem('recentSearches'));
+        },
+        isPlaceInRecentSearch: function(recentSearches, place){
+            var isPlaceThere = false;
+            recentSearches.forEach(function(obj){
+                if(obj.place === place){
+                    isPlaceThere = true;
                 }
+            });
+            return isPlaceThere;
+        },
+        addToRecentSearches: function (place, totalRes){
+            var recentSearches = this.getRecentSearches();
+            if(recentSearches && recentSearches.length){
+               if(this.isPlaceInRecentSearch(recentSearches, place)) return;
+            }else{
+                recentSearches = [];
             }
-
-            this.recentSearches.push({place: place, totalRes: totalRes});
-            window.localStorage.setItem('recentSearches', JSON.stringify(_.unique(this.recentSearches)));
+            recentSearches.push({place: place, totalRes: totalRes});
+            window.localStorage.setItem('recentSearches', JSON.stringify(recentSearches));
         },
         handleResponseCode: function(resp){
             var code = resp.response.application_response_code,
@@ -87,16 +124,19 @@
                 case "110":
                     if(this.listings.length){
                         this.addToRecentSearches(place, totalRes);
+                        router.navigate("listView", {trigger: true});
                         console.log('Go to List Screen')
                     }
                     break;
                 case "200":
                 case "202":
                     if(this.locations.length){
+                        this.render('locations');
                         console.log('Show nearest location')
                     }
                     break;
-                default: console.log('Error State')
+                default: console.log('Error State');
+                    this.render('error')
 
             }
         },
@@ -107,25 +147,36 @@
                 data: {place_name: place},
                 success: function(col, resp){
                     self.locations.reset(resp.response.locations);
-                    console.log('+++++++++++++++++++++++++++++++++++++++');
-                    console.log(resp)
                     self.handleResponseCode(resp)
                 }
             })
         }
     });
+    var ListScreen = Backbone.View.extend({
+        el: '.main_screen',
+        template: _.template($('#list_screen').html()),
+        render: function(){
+            var toTemplate = {listings: listings.toJSON()};
+            this.$el.html(this.template(toTemplate))
+        }
+    });
     var mainScreen = new MainScreen();
+    var listScreen = new ListScreen();
 
 
 //    -------------------------------ROUTERS--------------------------------
     var Router = Backbone.Router.extend({
         routes: {
-            '' : 'home'
+            '' : 'home',
+            'listView' : 'list_screen'
         }
     });
     var router = new Router();
     router.on('route:home', function(){
         mainScreen.render();
+    });
+    router.on('route:list_screen', function(){
+        listScreen.render();
     });
 
 

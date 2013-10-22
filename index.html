@@ -21,57 +21,114 @@
 </script>
 </body>
 <script type="text/javascript">
+
+
+//    -------------------------------MODELS--------------------------------
     var City = Backbone.Model.extend();
-    var SearchCities = Backbone.Collection.extend({
+    var Location = Backbone.Model.extend();
+    var Listings = Backbone.Collection.extend({
         url: 'http://api.nestoria.co.uk/api?country=uk&pretty=1&action=search_listings&encoding=json&listing_type=buy&page=1',
         model: City,
         parse: function(resp, xhr){
             return resp.response.listings;
         }
     });
-    var z = new SearchCities();
+    var Locations = Backbone.Collection.extend({
+        model: Location
+    });
+
+
+//    -------------------------------VIEWS--------------------------------
     var MainScreen = Backbone.View.extend({
         el: '.main_screen',
         render: function(){
             var template = _.template($('#main_screen').html());
             this.$el.html(template)
         },
+        recentSearches: [],
+        initialize: function(){
+            this.listings = new Listings();
+            this.locations = new Locations();
+        },
         events: {
             'click #search': 'search',
             'click #show': 'show'
         },
-        initialize: function(){
-            this.model = new SearchCities();
-        },
         show: function(){
-            console.log(this.model)
-            console.log(localStorage.getItem('place'))
-            console.log(localStorage.getItem('count'))
+            console.log('-=-=-=-=-=-=-=-=-=-=-=-=-=-=-==--=')
+            console.log(this.listings);
+            console.log(this.locations);
+            console.log(window.localStorage.getItem('recentSearches'));
+        },
+        addToRecentSearches: function (place, totalRes){
+            var recentSearches = JSON.parse(window.localStorage.getItem('recentSearches')),
+                isPlaceThere = true;
+            if(recentSearches && recentSearches.length){
+                recentSearches.forEach(function(obj){
+                    if(obj.place === place){
+                        isPlaceThere = false;
+                    }
+                });
+                if(!isPlaceThere){
+                    return;
+                }
+            }
+
+            this.recentSearches.push({place: place, totalRes: totalRes});
+            window.localStorage.setItem('recentSearches', JSON.stringify(_.unique(this.recentSearches)));
+        },
+        handleResponseCode: function(resp){
+            var code = resp.response.application_response_code,
+                place = resp.request.location,
+                totalRes = resp.response.total_results;
+            switch(code){
+                case "100":
+                case "101":
+                case "110":
+                    if(this.listings.length){
+                        this.addToRecentSearches(place, totalRes);
+                        console.log('Go to List Screen')
+                    }
+                    break;
+                case "200":
+                case "202":
+                    if(this.locations.length){
+                        console.log('Show nearest location')
+                    }
+                    break;
+                default: console.log('Error State')
+
+            }
         },
         search: function(){
-            var place = this.$el.find('#place').val();
-            this.model.fetch({
+            var self = this,
+                place = this.$el.find('#place').val();
+            this.listings.fetch({
                 data: {place_name: place},
                 success: function(col, resp){
-                    console.log('==========================')
-                    console.log(col)
+                    self.locations.reset(resp.response.locations);
+                    console.log('+++++++++++++++++++++++++++++++++++++++');
                     console.log(resp)
-                    localStorage.setItem('place', place)
-                    localStorage.setItem('count', resp.response.total_results)
+                    self.handleResponseCode(resp)
                 }
             })
         }
     });
+    var mainScreen = new MainScreen();
+
+
+//    -------------------------------ROUTERS--------------------------------
     var Router = Backbone.Router.extend({
         routes: {
             '' : 'home'
         }
     });
     var router = new Router();
-    var mainScreen = new MainScreen();
     router.on('route:home', function(){
         mainScreen.render();
     });
+
+
     Backbone.history.start();
 </script>
 </html>

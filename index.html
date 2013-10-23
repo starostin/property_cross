@@ -29,7 +29,7 @@
     <% } else if (recentSearch && recentSearch.length) { %>
     <ul>
         <% _.each(recentSearch, function(elem) { %>
-        <li><%= elem.place %> <span>(<%= elem.totalRes %>)</span></li>
+        <li class="recent_search"><span class="place_title"><%= elem.place %></span><span>(<%= elem.totalRes %>)</span></li>
         <% }); %>
     </ul>
     <% } %>
@@ -90,7 +90,8 @@
         },
         events: {
             'click #search': 'search',
-            'click #show': 'show'
+            'click #show': 'show',
+            'click li.recent_search': 'clickRecentSearch'
         },
         show: function(){
             console.log('-=-=-=-=-=-=-=-=-=-=-=-=-=-=-==--=')
@@ -100,6 +101,11 @@
         },
         getRecentSearches: function(){
             return JSON.parse(window.localStorage.getItem('recentSearches'));
+        },
+        clickRecentSearch: function(e){
+            var target = $(e.currentTarget),
+                val = target.find('span.place_title').text();
+            this.search(null, val)
         },
         arrayMove: function (array, from) {
             if(from === 0) return;
@@ -160,24 +166,22 @@
                     if(this.listings.length){
                         this.addToRecentSearches(place, totalRes);
                         router.navigate("listView", {trigger: true});
-                        console.log('Go to List Screen')
                     }
                     break;
                 case "200":
                 case "202":
                     if(this.locations.length){
                         this.render('locations');
-                        console.log('Show nearest location')
                     }
                     break;
-                default: console.log('Error State');
-                    this.render('error')
+                default: this.render('error');
 
             }
         },
-        search: function(){
+        search: function(e, val){
             var self = this,
-                place = this.$el.find('#place').val();
+                place = val || this.$el.find('#place').val();
+            console.log(place)
             this.listings.fetch({
                 data: {place_name: place},
                 success: function(col, resp){

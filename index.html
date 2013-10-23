@@ -36,6 +36,7 @@
 </script>
 
 <script type="text/template" id="list_screen">
+    <button class="back">Back</button>
     <ul>
         <% _.each(listings, function(list) { %>
         <li><img src="<%= list.thumb_url %>" alt="thumb"/> <%= list.title%> </li>
@@ -45,6 +46,11 @@
 
 </body>
 <script type="text/javascript">
+    Array.prototype.remove = function(from, to) {
+        var rest = this.slice((to || from) + 1 || this.length);
+        this.length = from < 0 ? this.length + from : from;
+        return this.push.apply(this, rest);
+    };
 
 
 //    -------------------------------MODELS--------------------------------
@@ -95,6 +101,32 @@
         getRecentSearches: function(){
             return JSON.parse(window.localStorage.getItem('recentSearches'));
         },
+        arrayMove: function (array, from) {
+            if(from === 0) return;
+            var clone = array.slice(0),
+                target = clone[from];
+
+            array.remove(from);
+            array.unshift(target);
+            console.log(array)
+
+        },
+        findObjPositionInArray: function(arr, val, property){
+            var counter = 0,
+                pos = -1;
+            arr.forEach(function(elem){
+                if (elem[property] === val){
+                    pos = counter;
+                }
+                counter++;
+            });
+            return pos;
+        },
+        moveElementInTop: function(recentSearches, place){
+            var from = +this.findObjPositionInArray(recentSearches, place, 'place');
+            this.arrayMove(recentSearches, from);
+            window.localStorage.setItem('recentSearches', JSON.stringify(recentSearches));
+        },
         isPlaceInRecentSearch: function(recentSearches, place){
             var isPlaceThere = false;
             recentSearches.forEach(function(obj){
@@ -107,11 +139,14 @@
         addToRecentSearches: function (place, totalRes){
             var recentSearches = this.getRecentSearches();
             if(recentSearches && recentSearches.length){
-               if(this.isPlaceInRecentSearch(recentSearches, place)) return;
+               if(this.isPlaceInRecentSearch(recentSearches, place)) {
+                   this.moveElementInTop(recentSearches, place);
+                   return;
+               }
             }else{
                 recentSearches = [];
             }
-            recentSearches.push({place: place, totalRes: totalRes});
+            recentSearches.unshift({place: place, totalRes: totalRes});
             window.localStorage.setItem('recentSearches', JSON.stringify(recentSearches));
         },
         handleResponseCode: function(resp){
@@ -158,6 +193,13 @@
         render: function(){
             var toTemplate = {listings: listings.toJSON()};
             this.$el.html(this.template(toTemplate))
+        },
+        events: {
+            'click .back': 'back'
+        },
+        back: function(){
+            router.navigate("", {trigger: true});
+//            window.history.back();
         }
     });
     var mainScreen = new MainScreen();

@@ -23,7 +23,7 @@
     <% } else if (locations) {%>
     <ul>
         <% _.each(locations, function(loc) { %>
-        <li data-place="<% loc.place_name %>"><%= loc.long_title %></li>
+        <li data-place="<%= loc.place_name %>" class="loc"><%= loc.long_title %></li>
         <% }); %>
     </ul>
     <% } else if (recentSearch && recentSearch.length) { %>
@@ -91,7 +91,8 @@
         events: {
             'click #search': 'search',
             'click #show': 'show',
-            'click li.recent_search': 'clickRecentSearch'
+            'click li.recent_search': 'clickRecentSearch',
+            'click li.loc': 'clickLocation'
         },
         show: function(){
             console.log('-=-=-=-=-=-=-=-=-=-=-=-=-=-=-==--=')
@@ -107,15 +108,18 @@
                 val = target.find('span.place_title').text();
             this.search(null, val)
         },
+        clickLocation: function(e){
+            var target = $(e.currentTarget),
+                place = target.data('place');
+
+            this.search(null, place);
+        },
         arrayMove: function (array, from) {
             if(from === 0) return;
             var clone = array.slice(0),
                 target = clone[from];
-
             array.remove(from);
             array.unshift(target);
-            console.log(array)
-
         },
         findObjPositionInArray: function(arr, val, property){
             var counter = 0,
@@ -128,8 +132,9 @@
             });
             return pos;
         },
-        moveElementInTop: function(recentSearches, place){
+        moveElementInTop: function(recentSearches, place, totalRes){
             var from = +this.findObjPositionInArray(recentSearches, place, 'place');
+            recentSearches[from]['totalRes'] = totalRes;
             this.arrayMove(recentSearches, from);
             window.localStorage.setItem('recentSearches', JSON.stringify(recentSearches));
         },
@@ -143,10 +148,11 @@
             return isPlaceThere;
         },
         addToRecentSearches: function (place, totalRes){
+            place = place.toLowerCase();
             var recentSearches = this.getRecentSearches();
             if(recentSearches && recentSearches.length){
                if(this.isPlaceInRecentSearch(recentSearches, place)) {
-                   this.moveElementInTop(recentSearches, place);
+                   this.moveElementInTop(recentSearches, place, totalRes);
                    return;
                }
             }else{
@@ -181,12 +187,13 @@
         search: function(e, val){
             var self = this,
                 place = val || this.$el.find('#place').val();
-            console.log(place)
+
             this.listings.fetch({
                 data: {place_name: place},
                 success: function(col, resp){
                     self.locations.reset(resp.response.locations);
                     self.handleResponseCode(resp)
+                    console.log(resp)
                 }
             })
         }
@@ -202,8 +209,8 @@
             'click .back': 'back'
         },
         back: function(){
-            router.navigate("", {trigger: true});
-//            window.history.back();
+//            router.navigate("", {trigger: true});
+            window.history.back();
         }
     });
     var mainScreen = new MainScreen();

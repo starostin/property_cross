@@ -233,6 +233,7 @@
         goBack: function(){
 //            router.navigate("", {trigger: true});
             window.history.back();
+            listings.coordinates = null;
         },
         showMore: function(){
             var page = listings.page + 1;

@@ -44,6 +44,9 @@
         <li><img src="<%= list.thumb_url %>" alt="thumb"/> <%= list.title%> </li>
         <% }); %>
     </ul>
+    <% if(listings.totalResults > 20 && listings.length !== listings.totalResults) { %>
+        <button class="show_more">Show more</button>
+    <% } %>
 </script>
 
 </body>
@@ -59,7 +62,7 @@
     var City = Backbone.Model.extend();
     var Location = Backbone.Model.extend();
     var Listings = Backbone.Collection.extend({
-        url: 'http://api.nestoria.co.uk/api?country=uk&pretty=1&action=search_listings&encoding=json&listing_type=buy&page=1',
+        url: 'http://api.nestoria.co.uk/api?country=uk&pretty=1&action=search_listings&encoding=json&listing_type=buy&callback=?',
         model: City,
         parse: function(resp, xhr){
             return resp.response.listings;
@@ -204,11 +207,12 @@
 
             this.inputVal = longName || place;
             this.listings.fetch({
-                data: coordinates ? {centre_point: coordinates} : {place_name: place},
+                data: coordinates ? {page: 1, centre_point: coordinates} : {page: 1, place_name: place},
                 success: function(col, resp){
                     self.locations.reset(resp.response.locations);
-                    console.log(coordinates)
-                    self.handleResponseCode(resp, longName, coordinates)
+                    self.handleResponseCode(resp, longName, coordinates);
+                    coordinates ? (self.listings.coordinates) = coordinates : self.listings.place = place;
+                    self.listings.page = +resp.response.page;
                     console.log(resp)
                 }
             })
@@ -221,12 +225,26 @@
             var toTemplate = {listings: listings};
             this.$el.html(this.template(toTemplate))
         },
+        page: 1,
         events: {
-            'click .back': 'back'
+            'click .back': 'goBack',
+            'click .show_more': 'showMore'
         },
-        back: function(){
+        goBack: function(){
 //            router.navigate("", {trigger: true});
             window.history.back();
+        },
+        showMore: function(){
+            var page = listings.page + 1;
+            var self = this;
+            listings.fetch({
+                remove: false,
+                data: listings.coordinates ? {page: page, centre_point: listings.coordinates} : {page: page, place_name: listings.place},
+                success: function(col, resp){
+                    listings.page = page;
+                    self.render();
+                }
+            })
         }
     });
     var mainScreen = new MainScreen();

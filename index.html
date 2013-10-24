@@ -15,9 +15,9 @@
 
 <script type="text/template" id="main_screen">
     <h1>HELLLO</h1>
-    <input type="text" id="place"/>
+    <input type="text" id="place" value="<%= this.inputVal %>"/>
     <button id="search">Search</button>
-    <button id="show">Show</button>
+    <button id="my_location">Go</button>
     <% if (error) { %>
     <h1><%= error%></h1>
     <% } else if (locations) {%>
@@ -29,7 +29,7 @@
     <% } else if (recentSearch && recentSearch.length) { %>
     <ul>
         <% _.each(recentSearch, function(elem) { %>
-        <li class="recent_search"><span class="place_title"><%= elem.place %></span><span>(<%= elem.totalRes %>)</span></li>
+        <li class="recent_search" data-placename="<%= elem.place %>"><span class="place_title"><%= elem.longName %></span><span>(<%= elem.totalRes %>)</span></li>
         <% }); %>
     </ul>
     <% } %>
@@ -37,8 +37,10 @@
 
 <script type="text/template" id="list_screen">
     <button class="back">Back</button>
+    <div class="total_results"><%= listings.length %> <% if(listings.totalResults > 20) { %> from <%= listings.totalResults %> <% } %></div>
     <ul>
-        <% _.each(listings, function(list) { %>
+        <% console.log(listings) %>
+        <% _.each(listings.toJSON(), function(list) { %>
         <li><img src="<%= list.thumb_url %>" alt="thumb"/> <%= list.title%> </li>
         <% }); %>
     </ul>
@@ -76,6 +78,7 @@
         el: '.main_screen',
         template: _.template($('#main_screen').html()),
         render: function(val){
+            console.log(this.inputVal)
             var toTemplate = {recentSearch: this.getRecentSearches() ? this.getRecentSearches() : null, error: null, locations: null};
             if(val === 'error'){
                 toTemplate.error = 'ERROR!!!';
@@ -90,29 +93,37 @@
         },
         events: {
             'click #search': 'search',
-            'click #show': 'show',
+            'click #my_location': 'searchByCurrentLocation',
             'click li.recent_search': 'clickRecentSearch',
             'click li.loc': 'clickLocation'
         },
-        show: function(){
-            console.log('-=-=-=-=-=-=-=-=-=-=-=-=-=-=-==--=')
-            console.log(this.listings);
-            console.log(this.locations);
-            console.log(window.localStorage.getItem('recentSearches'));
+
+        searchByCurrentLocation: function(){
+            var self = this, latitude='-1', longtitude='-1', coordinates;
+            navigator.geolocation.getCurrentPosition(function(pos){
+                latitude = pos.coords.latitude;
+                longtitude = pos.coords.longitude;
+                latitude = '51.684183';
+                longtitude = '-3.431481';
+                coordinates = latitude + ',' + longtitude;
+                self.search(null, null, null, coordinates);
+            });
         },
         getRecentSearches: function(){
             return JSON.parse(window.localStorage.getItem('recentSearches'));
         },
         clickRecentSearch: function(e){
             var target = $(e.currentTarget),
-                val = target.find('span.place_title').text();
-            this.search(null, val)
+                val = target.data('placename'),
+                longName = target.find('span.place_title').text();
+            this.search(null, val, longName)
         },
         clickLocation: function(e){
             var target = $(e.currentTarget),
-                place = target.data('place');
+                place = target.data('place'),
+                longName = target.text();
 
-            this.search(null, place);
+            this.search(null, place, longName);
         },
         arrayMove: function (array, from) {
             if(from === 0) return;
@@ -147,7 +158,8 @@
             });
             return isPlaceThere;
         },
-        addToRecentSearches: function (place, totalRes){
+        addToRecentSearches: function (place, totalRes, longName){
+            var longName = longName || (place.charAt(0).toUpperCase() + place.slice(1));
             place = place.toLowerCase();
             var recentSearches = this.getRecentSearches();
             if(recentSearches && recentSearches.length){
@@ -158,19 +170,21 @@
             }else{
                 recentSearches = [];
             }
-            recentSearches.unshift({place: place, totalRes: totalRes});
+            recentSearches.unshift({place: place, totalRes: totalRes, longName: longName});
             window.localStorage.setItem('recentSearches', JSON.stringify(recentSearches));
         },
-        handleResponseCode: function(resp){
+        handleResponseCode: function(resp, longName, coordinates){
             var code = resp.response.application_response_code,
                 place = resp.request.location,
-                totalRes = resp.response.total_results;
+                totalRes = resp.response.total_results,
+                longName = longName || null;
             switch(code){
                 case "100":
                 case "101":
                 case "110":
                     if(this.listings.length){
-                        this.addToRecentSearches(place, totalRes);
+                        if(!coordinates) this.addToRecentSearches(place, totalRes, longName);
+                        this.listings.totalResults = totalRes;
                         router.navigate("listView", {trigger: true});
                     }
                     break;
@@ -184,15 +198,17 @@
 
             }
         },
-        search: function(e, val){
+        search: function(e, val, longName, coordinates){
             var self = this,
                 place = val || this.$el.find('#place').val();
 
+            this.inputVal = longName || place;
             this.listings.fetch({
-                data: {place_name: place},
+                data: coordinates ? {centre_point: coordinates} : {place_name: place},
                 success: function(col, resp){
                     self.locations.reset(resp.response.locations);
-                    self.handleResponseCode(resp)
+                    console.log(coordinates)
+                    self.handleResponseCode(resp, longName, coordinates)
                     console.log(resp)
                 }
             })
@@ -202,7 +218,7 @@
         el: '.main_screen',
         template: _.template($('#list_screen').html()),
         render: function(){
-            var toTemplate = {listings: listings.toJSON()};
+            var toTemplate = {listings: listings};
             this.$el.html(this.template(toTemplate))
         },
         events: {

@@ -39,14 +39,22 @@
     <button class="back">Back</button>
     <div class="total_results"><%= listings.length %> <% if(listings.totalResults > 20) { %> from <%= listings.totalResults %> <% } %></div>
     <ul>
-        <% console.log(listings) %>
-        <% _.each(listings.toJSON(), function(list) { %>
-        <li><img src="<%= list.thumb_url %>" alt="thumb"/> <%= list.title%> </li>
+        <% _.each(listings.models, function(list) { %>
+        <li class="list_item" data-cid="<%= list.cid %>"><img src="<%= list.attributes.thumb_url %>" alt="thumb"/> <%= list.attributes.title%> </li>
         <% }); %>
     </ul>
     <% if(listings.totalResults > 20 && listings.length !== listings.totalResults) { %>
         <button class="show_more">Show more</button>
     <% } %>
+</script>
+
+<script type="text/template" id="item_screen">
+    <button class="back">Back</button>
+    <div class="details">
+        <% console.log(details) %>
+        <img src="<%= details.get('img_url') %>" alt="home"/>
+        <span><%= details.get('summary') %></span>
+    </div>
 </script>
 
 </body>
@@ -225,14 +233,20 @@
             var toTemplate = {listings: listings};
             this.$el.html(this.template(toTemplate))
         },
-        page: 1,
         events: {
+            'click .list_item': 'clickOnItem',
             'click .back': 'goBack',
             'click .show_more': 'showMore'
         },
         goBack: function(){
 //            router.navigate("", {trigger: true});
             window.history.back();
+        },
+        clickOnItem: function(e){
+            var target = $(e.currentTarget),
+                cid = target.data('cid');
+
+            router.navigate("detailView/" + cid, {trigger: true});
         },
         showMore: function(){
             var page = listings.page + 1;
@@ -247,15 +261,31 @@
             })
         }
     });
+
+    var DetailScreen = Backbone.View.extend({
+        el: '.main_screen',
+        template: _.template($('#item_screen').html()),
+        render: function(cid){
+            var model = listings.get(cid),
+                toTemplate = {details: model};
+            this.$el.html(this.template(toTemplate))
+        }
+    });
+
     var mainScreen = new MainScreen();
     var listScreen = new ListScreen();
+    var detailScreen = new DetailScreen();
 
 
 //    -------------------------------ROUTERS--------------------------------
     var Router = Backbone.Router.extend({
         routes: {
             '' : 'home',
-            'listView' : 'list_screen'
+            'listView' : 'list_screen',
+            'detailView/:cid' : 'detail_screen'
+        },
+        detail_screen: function(cid){
+            detailScreen.render(cid)
         }
     });
     var router = new Router();

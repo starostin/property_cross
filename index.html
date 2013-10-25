@@ -241,6 +241,7 @@
         goBack: function(){
 //            router.navigate("", {trigger: true});
             window.history.back();
+            listings.coordinates = null;
         },
         clickOnItem: function(e){
             var target = $(e.currentTarget),

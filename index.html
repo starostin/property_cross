@@ -5,19 +5,57 @@
     <script src="libs/jquery.js"></script>
     <script src="libs/underscore.js"></script>
     <script src="libs/backbone.js"></script>
+    <link rel="stylesheet" href="reset.css"/>
+    <link rel="stylesheet" href="assets.css"/>
+    <style type="text/css">
+        .active{
+            background-color: yellow;
+        }
+    </style>
 </head>
 <body>
 <div class="wrapper">
-    Property Cross
     <div class="main_screen">
+    </div>
+    <div id="overlay" style="display: none">
+        <div class="windows8">
+            <div class="wBall" id="wBall_1">
+                <div class="wInnerBall">
+                </div>
+            </div>
+            <div class="wBall" id="wBall_2">
+                <div class="wInnerBall">
+                </div>
+            </div>
+            <div class="wBall" id="wBall_3">
+                <div class="wInnerBall">
+                </div>
+            </div>
+            <div class="wBall" id="wBall_4">
+                <div class="wInnerBall">
+                </div>
+            </div>
+            <div class="wBall" id="wBall_5">
+                <div class="wInnerBall">
+                </div>
+            </div>
+        </div>
     </div>
 </div>
 
 <script type="text/template" id="main_screen">
-    <h1>HELLLO</h1>
+    <div class="header">
+        <div class="left_header_button" id="about"></div>
+        <span>Property Cross</span>
+        <div class="right_header_button" id="favorites"></div>
+    </div>
+    <p class="tip">Use the form below to search for houses to buy. You can search by place-name, postcode or click 'My location', to search in your current location</p>
     <input type="text" id="place" value="<%= this.inputVal %>"/>
-    <button id="search">Search</button>
-    <button id="my_location">Go</button>
+    <div class="button_set">
+        <div class="btn btn_left" id="search">Search</div>
+        <div class="btn btn_right" id="my_location">Go</div>
+        <div class="clear"></div>
+    </div>
     <% if (error) { %>
     <h1><%= error%></h1>
     <% } else if (locations) {%>
@@ -40,7 +78,7 @@
     <div class="total_results"><%= listings.length %> <% if(listings.totalResults > 20) { %> from <%= listings.totalResults %> <% } %></div>
     <ul>
         <% _.each(listings.models, function(list) { %>
-        <li class="list_item" data-cid="<%= list.cid %>"><img src="<%= list.attributes.thumb_url %>" alt="thumb"/> <%= list.attributes.title%> </li>
+        <li class="list_item" data-guid="<%= list.attributes.guid %>"><img src="<%= list.attributes.thumb_url %>" alt="thumb"/> <%= list.attributes.title%> </li>
         <% }); %>
     </ul>
     <% if(listings.totalResults > 20 && listings.length !== listings.totalResults) { %>
@@ -50,11 +88,20 @@
 
 <script type="text/template" id="item_screen">
     <button class="back">Back</button>
+    <button class="add_to_favorite <% if(isFavorite) { %> active <% } %>">Favorite</button>
     <div class="details">
-        <% console.log(details) %>
-        <img src="<%= details.get('img_url') %>" alt="home"/>
-        <span><%= details.get('summary') %></span>
+        <img src="<%= details.img_url %>" alt="home"/>
+        <span><%= details.summary %></span>
     </div>
+</script>
+
+<script type="text/template" id="favorite_screen">
+    <button class="back">Back</button>
+    <ul class="favorites">
+        <% _.each(favorites, function(favor) { %>
+        <li class="list_item" data-guid="<%= favor.guid %>"><img src="<%= favor.thumb_url %>" alt="thumb"/> <%= favor.title %> </li>
+        <% }); %>
+    </ul>
 </script>
 
 </body>
@@ -90,14 +137,13 @@
         el: '.main_screen',
         template: _.template($('#main_screen').html()),
         render: function(val){
-            console.log(this.inputVal)
             var toTemplate = {recentSearch: this.getRecentSearches() ? this.getRecentSearches() : null, error: null, locations: null};
             if(val === 'error'){
                 toTemplate.error = 'ERROR!!!';
             }else if(val === 'locations'){
                 toTemplate.locations = this.locations.toJSON();
             }
-            this.$el.html(this.template(toTemplate))
+            this.$el.html(this.template(toTemplate));
         },
         initialize: function(){
             this.listings = listings;
@@ -107,9 +153,13 @@
             'click #search': 'search',
             'click #my_location': 'searchByCurrentLocation',
             'click li.recent_search': 'clickRecentSearch',
-            'click li.loc': 'clickLocation'
+            'click li.loc': 'clickLocation',
+            'click #favorites': 'goToFavorites'
         },
 
+        goToFavorites: function(){
+            router.navigate("favoriteView", {trigger: true})
+        },
         searchByCurrentLocation: function(){
             var self = this, latitude='-1', longtitude='-1', coordinates;
             navigator.geolocation.getCurrentPosition(function(pos){
@@ -118,7 +168,7 @@
                 latitude = '51.684183';
                 longtitude = '-3.431481';
                 coordinates = latitude + ',' + longtitude;
-                self.search(null, null, null, coordinates);
+                self.search(null, null, coordinates);
             });
         },
         getRecentSearches: function(){
@@ -126,16 +176,13 @@
         },
         clickRecentSearch: function(e){
             var target = $(e.currentTarget),
-                val = target.data('placename'),
-                longName = target.find('span.place_title').text();
-            this.search(null, val, longName)
+                val = target.data('placename');
+            this.search(null, val)
         },
         clickLocation: function(e){
             var target = $(e.currentTarget),
-                place = target.data('place'),
-                longName = target.text();
-
-            this.search(null, place, longName);
+                place = target.data('place');
+            this.search(null, place);
         },
         arrayMove: function (array, from) {
             if(from === 0) return;
@@ -170,9 +217,9 @@
             });
             return isPlaceThere;
         },
-        addToRecentSearches: function (place, totalRes, longName){
-            var longName = longName || (place.charAt(0).toUpperCase() + place.slice(1));
+        addToRecentSearches: function (place, totalRes){
             place = place.toLowerCase();
+            var longName = this.locations.where({place_name: place})[0].get('long_title');
             var recentSearches = this.getRecentSearches();
             if(recentSearches && recentSearches.length){
                if(this.isPlaceInRecentSearch(recentSearches, place)) {
@@ -185,17 +232,16 @@
             recentSearches.unshift({place: place, totalRes: totalRes, longName: longName});
             window.localStorage.setItem('recentSearches', JSON.stringify(recentSearches));
         },
-        handleResponseCode: function(resp, longName, coordinates){
+        handleResponseCode: function(resp, coordinates){
             var code = resp.response.application_response_code,
                 place = resp.request.location,
-                totalRes = resp.response.total_results,
-                longName = longName || null;
+                totalRes = resp.response.total_results;
             switch(code){
                 case "100":
                 case "101":
                 case "110":
                     if(this.listings.length){
-                        if(!coordinates) this.addToRecentSearches(place, totalRes, longName);
+                        if(!coordinates) this.addToRecentSearches(place, totalRes);
                         this.listings.totalResults = totalRes;
                         router.navigate("listView", {trigger: true});
                     }
@@ -210,19 +256,20 @@
 
             }
         },
-        search: function(e, val, longName, coordinates){
+        search: function(e, val, coordinates){
             var self = this,
                 place = val || this.$el.find('#place').val();
-
-            this.inputVal = longName || place;
+            $('.wrapper').find('#overlay').removeAttr('style');
+            this.inputVal = place;
             this.listings.fetch({
                 data: coordinates ? {page: 1, centre_point: coordinates} : {page: 1, place_name: place},
                 success: function(col, resp){
                     self.locations.reset(resp.response.locations);
-                    self.handleResponseCode(resp, longName, coordinates);
+                    self.handleResponseCode(resp, coordinates);
                     coordinates ? (self.listings.coordinates) = coordinates : self.listings.place = place;
                     self.listings.page = +resp.response.page;
                     console.log(resp)
+                    $('.wrapper').find('#overlay').css('display', 'none');
                 }
             })
         }
@@ -232,7 +279,7 @@
         template: _.template($('#list_screen').html()),
         render: function(){
             var toTemplate = {listings: listings};
-            this.$el.html(this.template(toTemplate))
+            this.$el.html(this.template(toTemplate));
         },
         events: {
             'click .list_item': 'clickOnItem',
@@ -243,12 +290,13 @@
 //            router.navigate("", {trigger: true});
             window.history.back();
             listings.coordinates = null;
+
         },
         clickOnItem: function(e){
             var target = $(e.currentTarget),
-                cid = target.data('cid');
+                id = target.data('guid');
 
-            router.navigate("detailView/" + cid, {trigger: true});
+            router.navigate("detailView/" + id, {trigger: true});
         },
         showMore: function(){
             var page = listings.page + 1;
@@ -268,16 +316,71 @@
     var DetailScreen = Backbone.View.extend({
         el: '.main_screen',
         template: _.template($('#item_screen').html()),
-        render: function(cid){
-            var model = listings.get(cid),
-                toTemplate = {details: model};
+        render: function(id){
+            var isFavorite = null;
+            if (this.getFavorites()){
+                isFavorite = this.isFavorite(this.getFavorites(), id);
+            }
+            if(isFavorite){
+                var pos = mainScreen.findObjPositionInArray(this.getFavorites(), id, 'guid');
+                this.openDetail = this.getFavorites()[pos];
+            }else{
+                this.openDetail = listings.where({guid: id})[0].attributes;
+            }
+            var toTemplate = {details: this.openDetail, isFavorite: isFavorite};
             this.$el.html(this.template(toTemplate))
+        },
+        events: {
+            'click .add_to_favorite': 'addToFavorite'
+        },
+        isFavorite: function(favorites, id){
+            var isFavorite = false;
+            favorites.forEach(function(obj){
+                if(obj.guid === id){
+                    isFavorite = true;
+                }
+            });
+            return isFavorite;
+        },
+        getFavorites: function(){
+            return JSON.parse(window.localStorage.getItem('favorites'));
+        },
+        addToFavorite: function(e){
+            var target = $(e.currentTarget),
+                favorite = this.openDetail,
+                favorites = this.getFavorites();
+
+            if(!favorites){
+                favorites = [];
+            }
+            if(!target.hasClass('active')){
+                target.addClass('active');
+                favorites.unshift(favorite);
+                window.localStorage.setItem('favorites', JSON.stringify(favorites));
+            }else{
+                var positionInArray = mainScreen.findObjPositionInArray(favorites, favorite.guid, 'guid');
+                target.removeClass('active');
+                favorites.splice(positionInArray, 1);
+                window.localStorage.setItem('favorites', JSON.stringify(favorites));
+            }
+
+        }
+    });
+
+
+    var FavoriteScreen = Backbone.View.extend({
+        el: '.main_screen',
+        template: _.template($('#favorite_screen').html()),
+        render: function(){
+            var favorites = {favorites: detailScreen.getFavorites()};
+            this.$el.html(this.template(favorites))
         }
     });
 
     var mainScreen = new MainScreen();
     var listScreen = new ListScreen();
     var detailScreen = new DetailScreen();
+    var favoritesScreen = new FavoriteScreen();
 
 
 //    -------------------------------ROUTERS--------------------------------
@@ -285,10 +388,17 @@
         routes: {
             '' : 'home',
             'listView' : 'list_screen',
-            'detailView/:cid' : 'detail_screen'
+            'detailView/:id' : 'detail_screen',
+            'favoriteView' : 'favorite_screen'
         },
-        detail_screen: function(cid){
-            detailScreen.render(cid)
+        initialize: function() {
+            this.listenTo( Backbone, 'page-transition', this.animate );
+        },
+        animate: function( href, transition, direction ) {
+            // Do something interesting with this
+        },
+        detail_screen: function(id){
+            detailScreen.render(id)
         }
     });
     var router = new Router();
@@ -297,6 +407,9 @@
     });
     router.on('route:list_screen', function(){
         listScreen.render();
+    });
+    router.on('route:favorite_screen', function(){
+        favoritesScreen.render();
     });
 
 

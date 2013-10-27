@@ -429,6 +429,10 @@ input{
     height: 50px;
     width: 100px;
     background: red;
+    line-height: 50px;
+    color: white;
+    font-size: 20px;
+    cursor: pointer;
 }
 .btn_left{
     float: left;
@@ -438,4 +442,34 @@ input{
 }
 .clear{
     clear: both;
+}
+.error{
+    width: 96%;
+    margin: 15px 0;
+    font: 18px sans-serif;
+}
+
+.list_on_main{
+    width: 96%;
+    margin: auto;
+}
+.list_on_main li{
+    width: 100%;
+    height: 50px;
+    line-height: 50px;
+    background: yellow;
+    margin-top: 20px;
+}
+.scrollable{
+    margin: 15px 0;
+    height: 350px;
+    overflow: auto;
+}
+.recent_search{
+    text-align: left;
+    padding-left: 2%;
+}
+.count{
+    float: right;
+    margin-right: 2%;
 }

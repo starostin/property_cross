@@ -2,9 +2,11 @@
 <html>
 <head>
     <title></title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=0, minimum-scale=1.0, maximum-scale=1.0">
     <script src="libs/jquery.js"></script>
     <script src="libs/underscore.js"></script>
     <script src="libs/backbone.js"></script>
+    <script src="libs/backbone.responsiveCSS3transitions.js"></script>
     <link rel="stylesheet" href="reset.css"/>
     <link rel="stylesheet" href="assets.css"/>
     <style type="text/css">
@@ -15,8 +17,7 @@
 </head>
 <body>
 <div class="wrapper">
-    <div class="main_screen">
-    </div>
+    <div class="main_screen"></div>
     <div id="overlay" style="display: none">
         <div class="windows8">
             <div class="wBall" id="wBall_1">
@@ -57,19 +58,34 @@
         <div class="clear"></div>
     </div>
     <% if (error) { %>
-    <h1><%= error%></h1>
-    <% } else if (locations) {%>
-    <ul>
-        <% _.each(locations, function(loc) { %>
-        <li data-place="<%= loc.place_name %>" class="loc"><%= loc.long_title %></li>
-        <% }); %>
-    </ul>
+        <% if(error.error === 1) { %>
+            <div class="error">There were no properties found for the given location.</div>
+        <% }else if(error.error === 2) { %>
+            <div class="error">The location given was not recognised.</div>
+        <% }else if(error.error === 3) { %>
+            <div class="error">An error occurred while searching. Please check your network connection and try again.</div>
+        <% }else if(error.error === 4) { %>
+            <div class="error">The use of location is currently disabled.</div>
+        <% }else if(error.error === 5) { %>
+            <div class="error">Unable to detect current location. Please ensure location is turned on in your phone settings and try again.</div>
+        <% } %>
+    <% } %>
+    <% if (locations) {%>
+    <div class="scrollable">
+        <ul class="list_on_main">
+            <% _.each(locations, function(loc) { %>
+            <li data-place="<%= loc.place_name %>" class="loc"><%= loc.long_title %></li>
+            <% }); %>
+        </ul>
+    </div>
     <% } else if (recentSearch && recentSearch.length) { %>
-    <ul>
-        <% _.each(recentSearch, function(elem) { %>
-        <li class="recent_search" data-placename="<%= elem.place %>"><span class="place_title"><%= elem.longName %></span><span>(<%= elem.totalRes %>)</span></li>
-        <% }); %>
-    </ul>
+    <div class="scrollable">
+        <ul class="list_on_main">
+            <% _.each(recentSearch, function(elem) { %>
+            <li class="recent_search" data-placename="<%= elem.place %>"><span class="place_title"><%= elem.longName %></span><span class="count">(<%= elem.totalRes %>)</span></li>
+            <% }); %>
+        </ul>
+    </div>
     <% } %>
 </script>
 
@@ -135,15 +151,18 @@
 //    -------------------------------VIEWS--------------------------------
     var MainScreen = Backbone.View.extend({
         el: '.main_screen',
+        className: 'main-screen',
         template: _.template($('#main_screen').html()),
         render: function(val){
-            var toTemplate = {recentSearch: this.getRecentSearches() ? this.getRecentSearches() : null, error: null, locations: null};
-            if(val === 'error'){
-                toTemplate.error = 'ERROR!!!';
+            var toTemplate = {recentSearch: this.getRecentSearches() ? this.getRecentSearches() : null, error: null, locations: null, kool:null};
+            if(val && val.error){
+                toTemplate.error = val;
             }else if(val === 'locations'){
                 toTemplate.locations = this.locations.toJSON();
             }
             this.$el.html(this.template(toTemplate));
+            var height = $(window).height() - $('.scrollable').offset().top;
+            $('.scrollable').css('height', height)
         },
         initialize: function(){
             this.listings = listings;
@@ -161,7 +180,7 @@
             router.navigate("favoriteView", {trigger: true})
         },
         searchByCurrentLocation: function(){
-            var self = this, latitude='-1', longtitude='-1', coordinates;
+            var self = this, latitude='', longtitude='', coordinates;
             navigator.geolocation.getCurrentPosition(function(pos){
                 latitude = pos.coords.latitude;
                 longtitude = pos.coords.longitude;
@@ -169,7 +188,9 @@
                 longtitude = '-3.431481';
                 coordinates = latitude + ',' + longtitude;
                 self.search(null, null, coordinates);
-            });
+            }, function(){
+                self.render({error: 5})
+            }, {timeout: 5000});
         },
         getRecentSearches: function(){
             return JSON.parse(window.localStorage.getItem('recentSearches'));
@@ -235,7 +256,12 @@
         handleResponseCode: function(resp, coordinates){
             var code = resp.response.application_response_code,
                 place = resp.request.location,
-                totalRes = resp.response.total_results;
+                totalRes = resp.response.total_results,
+                statusCode = resp.response.status_code;
+//            if(statusCode !== '200'){
+//                this.render({error: 3});
+//                return;
+//            }
             switch(code){
                 case "100":
                 case "101":
@@ -244,16 +270,19 @@
                         if(!coordinates) this.addToRecentSearches(place, totalRes);
                         this.listings.totalResults = totalRes;
                         router.navigate("listView", {trigger: true});
+                    }else{
+                        this.render({error: 1});
                     }
                     break;
                 case "200":
                 case "202":
                     if(this.locations.length){
                         this.render('locations');
+                    }else{
+                        this.render({error: 1});
                     }
                     break;
-                default: this.render('error');
-
+                default: this.render({error: 2});
             }
         },
         search: function(e, val, coordinates){
@@ -262,6 +291,7 @@
             $('.wrapper').find('#overlay').removeAttr('style');
             this.inputVal = place;
             this.listings.fetch({
+                timeout: 5000,
                 data: coordinates ? {page: 1, centre_point: coordinates} : {page: 1, place_name: place},
                 success: function(col, resp){
                     self.locations.reset(resp.response.locations);

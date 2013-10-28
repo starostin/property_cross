@@ -448,22 +448,16 @@ input{
     margin: 15px 0;
     font: 18px sans-serif;
 }
-
-.list_on_main{
+.scrollable{
     width: 96%;
     margin: auto;
+    overflow: hidden;
 }
 .list_on_main li{
-    width: 100%;
     height: 50px;
     line-height: 50px;
     background: yellow;
     margin-top: 20px;
-}
-.scrollable{
-    margin: 15px 0;
-    height: 350px;
-    overflow: auto;
 }
 .recent_search{
     text-align: left;
@@ -472,4 +466,8 @@ input{
 .count{
     float: right;
     margin-right: 2%;
+}
+.scroll_list{
+    overflow: hidden;
+    z-index: -2;
 }

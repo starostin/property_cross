@@ -7,6 +7,7 @@
     <script src="libs/underscore.js"></script>
     <script src="libs/backbone.js"></script>
     <script src="libs/backbone.responsiveCSS3transitions.js"></script>
+    <script src="libs/iscroll.js"></script>
     <link rel="stylesheet" href="reset.css"/>
     <link rel="stylesheet" href="assets.css"/>
     <style type="text/css">
@@ -90,16 +91,21 @@
 </script>
 
 <script type="text/template" id="list_screen">
-    <button class="back">Back</button>
-    <div class="total_results"><%= listings.length %> <% if(listings.totalResults > 20) { %> from <%= listings.totalResults %> <% } %></div>
+    <div class="header">
+        <div class="left_header_button back"></div>
+        <span class="total_results"><%= listings.length %> <% if(listings.totalResults > 20) { %> from <%= listings.totalResults %> <% } %></span>
+        <div class="right_header_button" id="favorites"></div>
+    </div>
+    <div class="scroll_list">
     <ul>
         <% _.each(listings.models, function(list) { %>
         <li class="list_item" data-guid="<%= list.attributes.guid %>"><img src="<%= list.attributes.thumb_url %>" alt="thumb"/> <%= list.attributes.title%> </li>
         <% }); %>
+        <% if(listings.totalResults > 20 && listings.length !== listings.totalResults) { %>
+        <li><button class="show_more">Show more</button></li>
+        <% } %>
     </ul>
-    <% if(listings.totalResults > 20 && listings.length !== listings.totalResults) { %>
-        <button class="show_more">Show more</button>
-    <% } %>
+    </div>
 </script>
 
 <script type="text/template" id="item_screen">
@@ -160,9 +166,12 @@
             }else if(val === 'locations'){
                 toTemplate.locations = this.locations.toJSON();
             }
+            console.log(this.template(toTemplate))
             this.$el.html(this.template(toTemplate));
             var height = $(window).height() - $('.scrollable').offset().top;
-            $('.scrollable').css('height', height)
+            $('.scrollable').css('height', height);
+            var myScroll = new IScroll('.scrollable', { freeScroll: true, click: true});
+            return this;
         },
         initialize: function(){
             this.listings = listings;
@@ -310,11 +319,14 @@
         render: function(){
             var toTemplate = {listings: listings};
             this.$el.html(this.template(toTemplate));
+            var height = $(window).height() - $('.scroll_list').offset().top -20;
+            $('.scroll_list').css('height', height);
+            var myScroll = new IScroll('.scroll_list', { freeScroll: true, click: true});
         },
         events: {
             'click .list_item': 'clickOnItem',
             'click .back': 'goBack',
-            'click .show_more': 'showMore'
+            'click .show_more': 'showMore',
         },
         goBack: function(){
 //            router.navigate("", {trigger: true});
@@ -425,6 +437,8 @@
             this.listenTo( Backbone, 'page-transition', this.animate );
         },
         animate: function( href, transition, direction ) {
+            console.log('!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!')
+            console.log(href)
             // Do something interesting with this
         },
         detail_screen: function(id){

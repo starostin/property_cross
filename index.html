@@ -46,6 +46,8 @@
 </div>
 
 <script type="text/template" id="main_screen">
+    <%console.log(animate)%>
+    <div class="<% if(animate) {%> transition <% } %>">
     <div class="header">
         <div class="left_header_button" id="about"></div>
         <span>Property Cross</span>
@@ -88,9 +90,11 @@
         </ul>
     </div>
     <% } %>
+    </div>
 </script>
 
 <script type="text/template" id="list_screen">
+    <div class="transition">
     <div class="header">
         <div class="left_header_button back"></div>
         <span class="total_results"><%= listings.length %> <% if(listings.totalResults > 20) { %> from <%= listings.totalResults %> <% } %></span>
@@ -105,6 +109,7 @@
         <li><button class="show_more">Show more</button></li>
         <% } %>
     </ul>
+    </div>
     </div>
 </script>
 
@@ -160,14 +165,18 @@
         className: 'main-screen',
         template: _.template($('#main_screen').html()),
         render: function(val){
-            var toTemplate = {recentSearch: this.getRecentSearches() ? this.getRecentSearches() : null, error: null, locations: null, kool:null};
+            var toTemplate = {recentSearch: this.getRecentSearches() ? this.getRecentSearches() : null, error: null, locations: null, animate:null};
             if(val && val.error){
                 toTemplate.error = val;
             }else if(val === 'locations'){
                 toTemplate.locations = this.locations.toJSON();
             }
-            console.log(this.template(toTemplate))
+            if(listScreen.animate){
+                toTemplate.animate = true;
+                this.template(toTemplate)
+            }
             this.$el.html(this.template(toTemplate));
+            this.$el.find('.transition').addClass('animate');
             var height = $(window).height() - $('.scrollable').offset().top;
             $('.scrollable').css('height', height);
             var myScroll = new IScroll('.scrollable', { freeScroll: true, click: true});
@@ -316,9 +325,14 @@
     var ListScreen = Backbone.View.extend({
         el: '.main_screen',
         template: _.template($('#list_screen').html()),
-        render: function(){
+        render: function(flag){
             var toTemplate = {listings: listings};
             this.$el.html(this.template(toTemplate));
+            if(!flag){
+                this.$el.find('.transition').addClass('animate');
+            }else{
+                this.$el.find('.transition').removeClass('transition')
+            }
             var height = $(window).height() - $('.scroll_list').offset().top -20;
             $('.scroll_list').css('height', height);
             var myScroll = new IScroll('.scroll_list', { freeScroll: true, click: true});
@@ -330,6 +344,7 @@
         },
         goBack: function(){
 //            router.navigate("", {trigger: true});
+            this.animate = true;
             window.history.back();
             listings.coordinates = null;
 
@@ -348,7 +363,7 @@
                 data: listings.coordinates ? {page: page, centre_point: listings.coordinates} : {page: page, place_name: listings.place},
                 success: function(col, resp){
                     listings.page = page;
-                    self.render();
+                    self.render(true);
                 }
             })
         }
@@ -437,8 +452,6 @@
             this.listenTo( Backbone, 'page-transition', this.animate );
         },
         animate: function( href, transition, direction ) {
-            console.log('!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!')
-            console.log(href)
             // Do something interesting with this
         },
         detail_screen: function(id){

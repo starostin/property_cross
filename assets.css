@@ -461,9 +461,13 @@ input{
 }
 .recent_search{
     position: relative;
-    left: -100%;
     text-align: left;
     padding-left: 2%;
+    -webkit-transform: translate(-1000px);
+    -moz-transform: translate(-1000px);
+    -ms-transform: translate(-1000px);
+    -o-transform: translate(-1000px);
+    transform: translate(-1000px);
 }
 .count{
     float: right;

@@ -475,11 +475,18 @@ input{
 }
 .transition{
     position: relative;
+    width: 100%;
     -webkit-transform: translate(-1000px);
     -moz-transform: translate(-1000px);
     -ms-transform: translate(-1000px);
     -o-transform: translate(-1000px);
     transform: translate(-1000px);
+
+    -webkit-transition: 0.5s;
+    -moz-transition: 0.5s;
+    -ms-transition: 0.5s;
+    -o-transition: 0.5s;
+    transition: 0.5s;
 }
 .animate{
     -webkit-transform: translate(0);
@@ -487,9 +494,4 @@ input{
     -ms-transform: translate(0);
     -o-transform: translate(0);
     transform: translate(0);
-    -webkit-transition: 0.5s;
-    -moz-transition: 0.5s;
-    -ms-transition: 0.5s;
-    -o-transition: 0.5s;
-    transition: 0.5s;
 }

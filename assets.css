@@ -463,28 +463,42 @@ input{
     position: relative;
     text-align: left;
     padding-left: 2%;
-    -webkit-transform: translate(-1000px);
-    -moz-transform: translate(-1000px);
-    -ms-transform: translate(-1000px);
-    -o-transform: translate(-1000px);
-    transform: translate(-1000px);
+    -webkit-transform: translate(-3000px);
+    -moz-transform: translate(-3000px);
+    -ms-transform: translate(-3000px);
+    -o-transform: translate(-3000px);
+    transform: translate(-3000px);
 }
 .count{
     float: right;
     margin-right: 2%;
 }
-.scroll_list{
-    overflow: hidden;
+/*.scroll_list{*/
+    /*overflow: hidden;*/
+    /*z-index: -2;*/
+/*}*/
+.wrap {
+    position:absolute;
+    z-index:-2;
+    top:50px;
+    bottom:0;
+    left:0;
+    width:100%;
+    overflow:auto;
+}
+.scroll_list {
+    position:absolute;
+    width:100%;
+    padding:0;
     z-index: -2;
 }
 .transition{
-    position: relative;
     width: 100%;
-    -webkit-transform: translate(-1000px);
-    -moz-transform: translate(-1000px);
-    -ms-transform: translate(-1000px);
-    -o-transform: translate(-1000px);
-    transform: translate(-1000px);
+    -webkit-transform: translate(-3000px);
+    -moz-transform: translate(-3000px);
+    -ms-transform: translate(-3000px);
+    -o-transform: translate(-3000px);
+    transform: translate(-3000px);
 
     -webkit-transition: 0.5s;
     -moz-transition: 0.5s;

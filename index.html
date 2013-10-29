@@ -94,22 +94,25 @@
 </script>
 
 <script type="text/template" id="list_screen">
-    <div class="transition">
+    <!--<div class="transition">-->
     <div class="header">
         <div class="left_header_button back"></div>
+        <% console.log(listings) %>
         <span class="total_results"><%= listings.length %> <% if(listings.totalResults > 20) { %> from <%= listings.totalResults %> <% } %></span>
         <div class="right_header_button" id="favorites"></div>
     </div>
-    <div class="scroll_list">
-    <ul>
-        <% _.each(listings.models, function(list) { %>
-        <li class="list_item" data-guid="<%= list.attributes.guid %>"><img src="<%= list.attributes.thumb_url %>" alt="thumb"/> <%= list.attributes.title%> </li>
-        <% }); %>
-        <% if(listings.totalResults > 20 && listings.length !== listings.totalResults) { %>
-        <li><button class="show_more">Show more</button></li>
-        <% } %>
-    </ul>
-    </div>
+    <div class="wrap">
+        <div class="scroll_list">
+            <ul>
+                <% _.each(listings.models, function(list) { %>
+                <li class="list_item" data-guid="<%= list.attributes.guid %>"><img src="<%= list.attributes.thumb_url %>" alt="thumb"/> <%= list.attributes.title%> </li>
+                <% }); %>
+                <% if(listings.totalResults > 20 && listings.length !== listings.totalResults) { %>
+                <li><button class="show_more">Show more</button></li>
+                <% } %>
+            </ul>
+        </div>
+    <!--</div>-->
     </div>
 </script>
 
@@ -346,18 +349,18 @@
         el: '.main_screen',
         template: _.template($('#list_screen').html()),
         render: function(flag){
+            console.log('--------------render-------------')
             var toTemplate = {listings: listings};
             this.$el.html(this.template(toTemplate));
-            var height = $(window).height() - $('.scroll_list').offset().top -20;
-            $('.scroll_list').css('height', height);
+//            var height = $(window).height() - $('.scroll_list').offset().top -20;
+//            $('.scroll_list').css('height', height);
+            var myScroll = new IScroll('.wrap');
+            window.setTimeout(function () { myScroll.refresh();}, 1000);
             if(!flag){
                 this.$el.find('.transition').addClass('animate');
-                this.myScroll = new IScroll('.scroll_list', { freeScroll: true, click: true});
             }else{
                 this.$el.find('.transition').removeClass('transition')
-//                window.addEventListener("resize", this.myScroll.refresh, false);
             }
-
         },
         events: {
             'click .list_item': 'clickOnItem',
@@ -372,12 +375,15 @@
 
         },
         clickOnItem: function(e){
+            console.log('------------------------click----------------------')
             var target = $(e.currentTarget),
                 id = target.data('guid');
 
             router.navigate("detailView/" + id, {trigger: true});
         },
         showMore: function(){
+            console.log('--------------------show more----------------------')
+            document.removeEventListener('touchmove', function (e) { e.preventDefault(); }, false);
             var page = listings.page + 1;
             var self = this;
             listings.fetch({

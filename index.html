@@ -177,9 +177,21 @@
             }
             this.$el.html(this.template(toTemplate));
             this.$el.find('.transition').addClass('animate');
+            var recentSearches = this.$el.find('.recent_search');
+            var delay = 0;
+            for(var i=0; i<=recentSearches.length; i++ ){
+                delay = delay + 0.1;
+                if(recentSearches[i]){
+                    $(recentSearches[i]).css({
+                        left: 0,
+                        transition: 'left 0.5s ' + delay +'s' + ' ease'
+                    })
+                }
+            }
             var height = $(window).height() - $('.scrollable').offset().top;
             $('.scrollable').css('height', height);
             var myScroll = new IScroll('.scrollable', { freeScroll: true, click: true});
+            listScreen.animate = false;
             return this;
         },
         initialize: function(){
@@ -328,19 +340,21 @@
         render: function(flag){
             var toTemplate = {listings: listings};
             this.$el.html(this.template(toTemplate));
-            if(!flag){
-                this.$el.find('.transition').addClass('animate');
-            }else{
-                this.$el.find('.transition').removeClass('transition')
-            }
             var height = $(window).height() - $('.scroll_list').offset().top -20;
             $('.scroll_list').css('height', height);
-            var myScroll = new IScroll('.scroll_list', { freeScroll: true, click: true});
+            if(!flag){
+                this.$el.find('.transition').addClass('animate');
+                this.myScroll = new IScroll('.scroll_list', { freeScroll: true, click: true});
+            }else{
+                this.$el.find('.transition').removeClass('transition')
+//                window.addEventListener("resize", this.myScroll.refresh, false);
+            }
+
         },
         events: {
             'click .list_item': 'clickOnItem',
             'click .back': 'goBack',
-            'click .show_more': 'showMore',
+            'click .show_more': 'showMore'
         },
         goBack: function(){
 //            router.navigate("", {trigger: true});

@@ -7,7 +7,7 @@
     <script src="libs/underscore.js"></script>
     <script src="libs/backbone.js"></script>
     <script src="libs/backbone.responsiveCSS3transitions.js"></script>
-    <script src="libs/iscroll.js"></script>
+    <script src="libs/iscroll-probe.js"></script>
     <script src="libs/fastclick.js"></script>
     <link rel="stylesheet" href="reset.css"/>
     <link rel="stylesheet" href="assets.css"/>
@@ -362,23 +362,38 @@
             if(!flag){
                 var toTemplate = {listings: listings};
                 this.$el.html(this.template(toTemplate));
-                self.myScroll = new IScroll('.wrap', {tap:true});
+                self.myScroll = new IScroll('.wrap', {
+                    tap:true,
+                    click: true,
+                    probeType: 3
+                });
+
+                self.myScroll.on('scroll', self.updatePosition);
+                self.myScroll.on('scrollEnd', self.updatePosition);
+
                 this.$el.find('.transition').addClass('animate');
-            }else{
-                console.log(moreItems);
-                var li = ''
-                for(var i = 0; i < moreItems.length; i++){
-                    li += '<li class="list_item" data-guid="' + moreItems[i]['guid'] + '"><div class="img" style="background: url(' + moreItems[i]['thumb_url'] + ')"></div>' + moreItems[i]['title'] + '</li>';
-                }
-                $('.scroll_list ul').append(li);
-                self.myScroll.refresh();
-                this.$el.find('.transition').removeClass('transition')
             }
         },
         events: {
             'click .list_item': 'clickOnItem',
             'click .back': 'goBack',
             'tap .show_more': 'showMore'
+        },
+        updateList: function(moreItems){
+            var list = '', self = this;
+            for(var i = 0; i < moreItems.length; i++){
+                list += '<li class="list_item" data-guid="' + moreItems[i]['guid'] + '"><div class="img" style="background: url(' + moreItems[i]['thumb_url'] + ')"></div>' + moreItems[i]['title'] + '</li>';
+            }
+            $('.scroll_list ul').append(list);
+            self.myScroll.refresh();
+            this.$el.find('.transition').removeClass('transition')
+        },
+        updatePosition: function(){
+            console.log(this.getComputedPosition());
+            console.log(this.y>>0);
+            if((this.y>>0)<-1110){
+                listScreen.showMore();
+            }
         },
         goBack: function(){
 //            router.navigate("", {trigger: true});
@@ -394,7 +409,7 @@
 
             router.navigate("detailView/" + id, {trigger: true});
         },
-        showMore: function(e){
+        showMore: function(){
             console.log('--------------------show more----------------------')
             var page = listings.page + 1;
             var self = this;
@@ -404,7 +419,8 @@
                 success: function(col, resp){
                     console.log(resp)
                     listings.page = page;
-                    self.render(true, resp.response.listings);
+                    self.updateList(resp.response.listings);
+//                    self.render(true, resp.response.listings);
                 }
             })
         }

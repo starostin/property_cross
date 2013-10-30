@@ -484,7 +484,7 @@ input{
     bottom:0;
     left:0;
     width:100%;
-    overflow:auto;
+    overflow:hidden;
 }
 .scroll_list {
     position:absolute;
@@ -512,4 +512,19 @@ input{
     -ms-transform: translate(0);
     -o-transform: translate(0);
     transform: translate(0);
+}
+.img{
+    width: 60px;
+    height: 60px;
+    float: left;
+}
+.list_item{
+    height: 60px;
+    line-height: 60px;
+    border-bottom: 1px solid black;
+}
+.show_more{
+    height: 60px;
+    line-height: 60px;
+    background: green;
 }

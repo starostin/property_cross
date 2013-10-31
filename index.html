@@ -389,8 +389,7 @@
             this.$el.find('.transition').removeClass('transition')
         },
         updatePosition: function(){
-            console.log(this.getComputedPosition());
-            console.log(this.y>>0);
+            console.log(this.maxScrollY)
             if((this.y>>0)<-1110){
                 listScreen.showMore();
             }

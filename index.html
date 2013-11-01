@@ -99,7 +99,7 @@
     <div class="header">
         <div class="left_header_button back"></div>
         <% console.log(listings) %>
-        <span class="total_results"><%= listings.length %> <% if(listings.totalResults > 20) { %> from <%= listings.totalResults %> <% } %></span>
+        <span class="total_results"><span class="current_result"><%= listings.length %></span><% if(listings.totalResults > 20) { %> from <%= listings.totalResults %> <% } %></span>
         <div class="right_header_button" id="favorites"></div>
     </div>
     <div class="wrap">
@@ -109,7 +109,7 @@
                 <li class="list_item" data-guid="<%= list.attributes.guid %>"><div class="img" style="background: url(<%= list.attributes.thumb_url %>)"></div> <%= list.attributes.title%> </li>
                 <% }); %>
                 <% if(listings.totalResults > 20 && listings.length !== listings.totalResults) { %>
-                <li class="show_more"></li>
+                <li class="show_more"><span class="spinner"></span></li>
                 <% } %>
             </ul>
         </div>
@@ -369,29 +369,44 @@
                 });
 
                 self.myScroll.on('scroll', self.updatePosition);
-                self.myScroll.on('scrollEnd', self.updatePosition);
+                self.myScroll.on('beforeScrollStart', self.getListHeight);
+                self.myScroll.on('scrollEnd', self.removeFlag);
 
                 this.$el.find('.transition').addClass('animate');
             }
         },
         events: {
             'click .list_item': 'clickOnItem',
-            'click .back': 'goBack',
-            'tap .show_more': 'showMore'
+            'click .back': 'goBack'
         },
+        flag: 0,
         updateList: function(moreItems){
-            var list = '', self = this;
+            var list = '', self = this, currentResult = +this.$el.find('.current_result').text();
             for(var i = 0; i < moreItems.length; i++){
                 list += '<li class="list_item" data-guid="' + moreItems[i]['guid'] + '"><div class="img" style="background: url(' + moreItems[i]['thumb_url'] + ')"></div>' + moreItems[i]['title'] + '</li>';
             }
-            $('.scroll_list ul').append(list);
+            $('.show_more').before(list);
+            console.log(currentResult)
+            console.log(moreItems.length)
+            $('.current_result').text(currentResult + moreItems.length);
             self.myScroll.refresh();
-            this.$el.find('.transition').removeClass('transition')
         },
-        updatePosition: function(){
-            console.log(this.maxScrollY)
-            if((this.y>>0)<-1110){
-                listScreen.showMore();
+        showMor: function(){
+            if(this.flag === 1){
+                this.showMore();
+            }
+        },
+        removeFlag: function(){
+            listScreen.flag = 0;
+        },
+        getListHeight: function(){
+            listScreen.scrollHeight = Math.abs(this.maxScrollY);
+        },
+        updatePosition: function () {
+            var heightForSpinner = listScreen.scrollHeight - listScreen.$el.find('.show_more').height();
+            if(Math.abs((this.y>>0)) > heightForSpinner){
+                listScreen.flag++;
+                listScreen.showMor();
             }
         },
         goBack: function(){
@@ -402,14 +417,12 @@
 
         },
         clickOnItem: function(e){
-            console.log('------------------------click----------------------')
             var target = $(e.currentTarget),
                 id = target.data('guid');
 
             router.navigate("detailView/" + id, {trigger: true});
         },
         showMore: function(){
-            console.log('--------------------show more----------------------')
             var page = listings.page + 1;
             var self = this;
             listings.fetch({

@@ -555,17 +555,30 @@ input{
 }
 .transition{
     width: 100%;
-    -webkit-transform: translate(-3000px);
-    -moz-transform: translate(-3000px);
-    -ms-transform: translate(-3000px);
-    -o-transform: translate(-3000px);
-    transform: translate(-3000px);
+    position: absolute;
+    bottom: 0;
+    top: 0;
+    right: 0;
 
     -webkit-transition: 0.5s;
     -moz-transition: 0.5s;
     -ms-transition: 0.5s;
     -o-transition: 0.5s;
     transition: 0.5s;
+}
+.left{
+    -webkit-transform: translate(-3000px);
+    -moz-transform: translate(-3000px);
+    -ms-transform: translate(-3000px);
+    -o-transform: translate(-3000px);
+    transform: translate(-3000px);
+}
+.right{
+    -webkit-transform: translate(3000px);
+    -moz-transform: translate(3000px);
+    -ms-transform: translate(3000px);
+    -o-transform: translate(3000px);
+    transform: translate(3000px);
 }
 .animate{
     -webkit-transform: translate(0);
@@ -588,4 +601,17 @@ input{
     height: 60px;
     line-height: 60px;
     background: green;
+}
+.favor{
+    margin-top: -15px;
+    margin-right: 2%;
+    top: 50%;
+    position: relative;
+    width: 30px;
+    height: 30px;
+    background: red;
+    float: right;
+    display: inline-block;
+    vertical-align: middle;
+    line-height: 30px;
 }

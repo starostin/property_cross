@@ -425,16 +425,20 @@
 
 /*------------------------------------------------HEADER---------------------------------------------------*/
 .header {
-    width:100%;
-    height:50px;
-    line-height:50px;
+    width: 100%;
+    height: 72px;
+    line-height: 72px;
     text-align: center;
-    font-size: 24px;
-    background:#FFF;
-    position:relative;
+    font: 30px 'Roboto', sans-serif;
+    color: #ebf0f1;
+    background: #13151a;
+    position: relative;
     -webkit-box-shadow:0 1px 4px rgba(0, 0, 0, 0.3);
     -moz-box-shadow:0 1px 4px rgba(0, 0, 0, 0.3);
     box-shadow:0 1px 4px rgba(0, 0, 0, 0.3);
+}
+.header span{
+    line-height: 72px;
 }
 .header:before, .header:after
 {
@@ -452,18 +456,30 @@
     border-radius:500px / 10px;
 }
 .left_header_button{
-    width: 50px;
+    width: 70px;
     height: 100%;
-    background: green;
     float: left;
     cursor: pointer;
 }
 .right_header_button{
-    width: 50px;
+    width: 70px;
     height: 100%;
-    background: green;
     float: right;
     cursor: pointer;
+}
+#favorites{
+    background: url(img/favor_icon.png) no-repeat center center;
+}
+#info{
+    background: url(img/info_icon.png) no-repeat center center;
+}
+#home{
+    background: url(img/logo.png) no-repeat center center;
+}
+.back{
+    background: url(img/back_button.png), url(img/logo.png);
+    background-repeat: no-repeat, no-repeat;
+    background-position: 10px center, 30px center;
 }
 /*-------------------------------------------MAIN SCREEN-------------------------------------------------*/
 .main_screen{

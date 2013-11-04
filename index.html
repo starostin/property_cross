@@ -3,6 +3,7 @@
 <head>
     <title></title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=0, minimum-scale=1.0, maximum-scale=1.0">
+    <link href='http://fonts.googleapis.com/css?family=Roboto:400,700' rel='stylesheet' type='text/css'>
     <script src="libs/jquery.js"></script>
     <script src="libs/underscore.js"></script>
     <script src="libs/backbone.js"></script>
@@ -49,9 +50,10 @@
 <script type="text/template" id="main_screen">
     <div class="<% if(back) {%> transition left <% } %>">
     <div class="header">
-        <div class="left_header_button" id="about"></div>
+        <div class="left_header_button" id="home"></div>
         <span>Property Cross</span>
         <div class="right_header_button" id="favorites"></div>
+        <div class="right_header_button" id="info"></div>
     </div>
     <p class="tip">Use the form below to search for houses to buy. You can search by place-name, postcode or click 'My location', to search in your current location</p>
     <input type="text" id="place" value="<%= this.inputVal %>"/>
@@ -120,9 +122,10 @@
         <div class="header">
             <div class="left_header_button back"></div>
             <span>Details</span>
-            <div class="right_header_button add_to_favorite <% if(details.isFavorite) { %> active <% } %>"></div>
+            <div class="right_header_button" id="favorites"></div>
         </div>
         <div class="details">
+            <div class="<% if(details.isFavorite) { %> active <% } %>"></div>
             <img src="<%= details.img_url %>" alt="home"/>
             <span><%= details.summary %></span>
         </div>
@@ -134,7 +137,6 @@
         <div class="header">
             <div class="left_header_button back"></div>
             <span>Favorites</span>
-            <div class="right_header_button" id="favorites"></div>
         </div>
         <div class="wrap">
             <div class="scroll_list">

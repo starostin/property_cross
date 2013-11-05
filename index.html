@@ -20,7 +20,10 @@
 </head>
 <body>
 <div class="wrapper">
-    <div class="main_screen"></div>
+    <div class="main_screen transition"></div>
+    <div class="list_screen transition right"></div>
+    <div class="item_screen transition right"></div>
+    <div class="favorite_screen transition right"></div>
     <div id="overlay" style="display: none">
         <div class="windows8">
             <div class="wBall" id="wBall_1">
@@ -48,7 +51,6 @@
 </div>
 
 <script type="text/template" id="main_screen">
-    <div class="<% if(back) {%> transition left <% } %>">
     <div class="header">
         <div class="left_header_button" id="home"></div>
         <span>Property Cross</span>
@@ -92,11 +94,9 @@
         </ul>
     </div>
     <% } %>
-    </div>
 </script>
 
 <script type="text/template" id="list_screen">
-    <div class="transition <% if(back) {%> left <% }else{ %> right <% } %>">
         <div class="header">
             <div class="left_header_button back"></div>
             <span class="total_results"><span class="current_result"><%= listings.length %></span><% if(listings.totalResults > 20) { %> from <%= listings.totalResults %> <% } %></span>
@@ -114,11 +114,9 @@
                 </ul>
             </div>
         </div>
-    </div>
 </script>
 
 <script type="text/template" id="item_screen">
-    <div class="transition <% if(back) {%> left <% }else{ %> right <% } %>">
         <div class="header">
             <div class="left_header_button back"></div>
             <span>Details</span>
@@ -129,11 +127,9 @@
             <img src="<%= details.img_url %>" alt="home"/>
             <span><%= details.summary %></span>
         </div>
-    </div>
 </script>
 
 <script type="text/template" id="favorite_screen">
-    <div class="transition <% if(back) {%> left <% }else{ %> right <% } %>">
         <div class="header">
             <div class="left_header_button back"></div>
             <span>Favorites</span>
@@ -147,7 +143,6 @@
                 </ul>
             </div>
         </div>
-    </div>
 </script>
 
 </body>
@@ -217,16 +212,21 @@
         className: 'main-screen',
         template: _.template($('#main_screen').html()),
         render: function(val){
-            var toTemplate = {recentSearch: this.getRecentSearches() ? this.getRecentSearches() : null, error: null, locations: null, back:null};
+            var toTemplate = {recentSearch: this.getRecentSearches() ? this.getRecentSearches() : null, error: null, locations: null};
             if(val && val.error){
                 toTemplate.error = val;
             }else if(val === 'locations'){
                 toTemplate.locations = this.locations.toJSON();
             }
             if(listScreen.back){
-                toTemplate.back = true;
-                this.template(toTemplate)
+                $('.list_screen').removeClass('animate');
+                $('.list_screen').addClass('right');
+            }else if(favoritesScreen.back){
+                $('.favorite_screen').removeClass('animate');
+                $('.favorite_screen').addClass('right');
             }
+            this.el.classList.remove('left');
+            this.el.classList.add('animate')
             this.$el.html(this.template(toTemplate));
             var recentSearches = this.$el.find('.recent_search');
             var delay = 0;
@@ -251,7 +251,6 @@
             $('.scrollable').css('height', height);
             var myScroll = new IScroll('.scrollable', { freeScroll: true, click: true});
             this.$el.find('.transition').addClass('animate');
-            listScreen.back = false;
             return this;
         },
         initialize: function(){
@@ -401,14 +400,21 @@
 
 
     var ListScreen = Backbone.View.extend({
-        el: '.main_screen',
+        el: '.list_screen',
         template: _.template($('#list_screen').html()),
         render: function(){
             var self = this,
-            toTemplate = {listings: listings, back: null};
-            if(listScreen.back){
-                toTemplate.back = true;
-                this.template(toTemplate)
+            toTemplate = {listings: listings};
+            if(detailScreen.back){
+                $('.item_screen').removeClass('animate');
+                $('.item_screen').addClass('right');
+                this.el.classList.remove('left');
+                this.el.classList.add('animate');
+            }else{
+                $('.main_screen').removeClass('animate');
+                $('.main_screen').addClass('left');
+                this.el.classList.remove('right');
+                this.el.classList.add('animate');
             }
             this.$el.html(this.template(toTemplate));
             self.myScroll = new IScroll('.wrap', {
@@ -418,9 +424,9 @@
             });
             self.myScroll.on('scroll', self.updatePosition);
             self.myScroll.on('beforeScrollStart', self.getListHeight);
-            this.$el.find('.transition').addClass('animate');
+//            this.$el.find('.transition').addClass('animate');
             self.checkOnFavorites();
-            listScreen.back = false;
+            detailScreen.back = false;
         },
         events: {
             'click .list_item': 'clickOnItem',
@@ -465,6 +471,7 @@
         },
         goBack: function(){
 //            router.navigate("", {trigger: true});
+            console.log('------------------------------')
             this.back = true;
             window.history.back();
             listings.coordinates = null;
@@ -500,7 +507,7 @@
 
 
     var DetailScreen = Backbone.View.extend({
-        el: '.main_screen',
+        el: '.item_screen',
         template: _.template($('#item_screen').html()),
         render: function(id){
 
@@ -514,20 +521,28 @@
             }else{
                 this.openDetail = listings.where({guid: id})[0].attributes;
             }
-            var toTemplate = {details: this.openDetail, isFavorite: isFavorite, back: null};
-            if(listScreen.back){
-                toTemplate.back = true;
-                this.template(toTemplate)
-            }
+            $('.list_screen').removeClass('animate');
+            $('.list_screen').addClass('left');
+            $('.favorite_screen').removeClass('animate');
+            $('.favorite_screen').addClass('left');
+            this.el.classList.remove('right');
+            this.el.classList.add('animate');
+            var toTemplate = {details: this.openDetail, isFavorite: isFavorite};
+//            if(listScreen.back){
+//                toTemplate.back = true;
+//                this.template(toTemplate)
+//            }
             this.$el.html(this.template(toTemplate));
-            window.setTimeout(function(){
-                self.$el.find('.transition').addClass('animate');
-            }, 0);
 
             listScreen.back = false;
         },
         events: {
-            'click .add_to_favorite': 'addToFavorite'
+            'click .add_to_favorite': 'addToFavorite',
+            'click .back': 'goBack'
+        },
+        goBack: function(){
+            this.back = true;
+            window.history.back();
         },
         isFavorite: function(favorites, id){
             var isFavorite = false;
@@ -568,13 +583,20 @@
 
 
     var FavoriteScreen = Backbone.View.extend({
-        el: '.main_screen',
+        el: '.favorite_screen',
         template: _.template($('#favorite_screen').html()),
         render: function(){
             var toTemplate = {favorites: detailScreen.getFavorites(), back: null};
-            if(listScreen.back){
-                toTemplate.back = true;
-                this.template(toTemplate)
+            if(detailScreen.back){
+                $('.item_screen').removeClass('animate');
+                $('.item_screen').addClass('right');
+                this.el.classList.remove('left');
+                this.el.classList.add('animate');
+            } else {
+                $('.main_screen').removeClass('animate');
+                $('.main_screen').addClass('left');
+                this.el.classList.remove('right');
+                this.el.classList.add('animate');
             }
             this.$el.html(this.template(toTemplate));
             var myScrollFavorites = new IScroll('.wrap', {
@@ -582,9 +604,23 @@
                 click: true,
                 probeType: 3
             });
-            this.$el.find('.transition').addClass('animate');
-            listScreen.back = false;
-        }
+//            this.$el.find('.transition').addClass('animate');
+            detailScreen.back = false;
+        },
+        events: {
+            'click .back': 'goBack',
+            'click .list_item': 'clickOnItem'
+        },
+        goBack: function(){
+            this.back = true;
+            window.history.back();
+        },
+        clickOnItem: function(e){
+            var target = $(e.currentTarget),
+                    id = target.data('guid');
+
+            router.navigate("detailView/" + id, {trigger: true});
+        },
     });
 
     var mainScreen = new MainScreen();

@@ -1,4 +1,11 @@
 /*--------------------------SPINNER WIN8----------------------------------------*/
+body{
+    overflow: hidden;
+}
+.wrapper{
+    position: static;
+    overflow: hidden;
+}
 #overlay{
     position: fixed;
     top: 0;
@@ -568,6 +575,13 @@ input{
     width:100%;
     padding:0;
     z-index: -2;
+}
+.temp_wrap{
+    width: 100%;
+    position: absolute;
+    bottom: 0;
+    top: 0;
+    right: 0;
 }
 .transition{
     width: 100%;

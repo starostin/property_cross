@@ -228,7 +228,6 @@
                 this.template(toTemplate)
             }
             this.$el.html(this.template(toTemplate));
-            this.$el.find('.transition').addClass('animate');
             var recentSearches = this.$el.find('.recent_search');
             var delay = 0;
             for(var i=0; i<=recentSearches.length; i++ ){
@@ -251,6 +250,7 @@
             var height = $(window).height() - $('.scrollable').offset().top;
             $('.scrollable').css('height', height);
             var myScroll = new IScroll('.scrollable', { freeScroll: true, click: true});
+            this.$el.find('.transition').addClass('animate');
             listScreen.back = false;
             return this;
         },
@@ -503,14 +503,27 @@
         el: '.main_screen',
         template: _.template($('#item_screen').html()),
         render: function(id){
-            this.openDetail = listings.where({guid: id})[0].attributes;
-            var toTemplate = {details: this.openDetail, back: null};
+
+            var isFavorite = null, self = this;
+            if (this.getFavorites()){
+                isFavorite = this.isFavorite(this.getFavorites(), id);
+            }
+            if(isFavorite){
+                var pos = mainScreen.findObjPositionInArray(this.getFavorites(), id, 'guid');
+                this.openDetail = this.getFavorites()[pos];
+            }else{
+                this.openDetail = listings.where({guid: id})[0].attributes;
+            }
+            var toTemplate = {details: this.openDetail, isFavorite: isFavorite, back: null};
             if(listScreen.back){
                 toTemplate.back = true;
                 this.template(toTemplate)
             }
             this.$el.html(this.template(toTemplate));
-            this.$el.find('.transition').addClass('animate');
+            window.setTimeout(function(){
+                self.$el.find('.transition').addClass('animate');
+            }, 0);
+
             listScreen.back = false;
         },
         events: {

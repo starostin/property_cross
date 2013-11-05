@@ -583,18 +583,18 @@ input{
     transition: 0.5s;
 }
 .left{
-    -webkit-transform: translate(-3000px);
+    -webkit-transform: translate(-100%);
     -moz-transform: translate(-3000px);
     -ms-transform: translate(-3000px);
     -o-transform: translate(-3000px);
-    transform: translate(-3000px);
+    transform: translate(-100%);
 }
 .right{
-    -webkit-transform: translate(3000px);
+    -webkit-transform: translate(100%);
     -moz-transform: translate(3000px);
     -ms-transform: translate(3000px);
     -o-transform: translate(3000px);
-    transform: translate(3000px);
+    transform: translate(100%);
 }
 .animate{
     -webkit-transform: translate(0);

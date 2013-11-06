@@ -24,6 +24,7 @@
     <div class="list_screen transition right"></div>
     <div class="item_screen transition right"></div>
     <div class="favorite_screen transition right"></div>
+    <div class="favorite_item_screen transition right"></div>
     <div id="overlay" style="display: none">
         <div class="windows8">
             <div class="wBall" id="wBall_1">
@@ -145,6 +146,19 @@
         </div>
 </script>
 
+<script type="text/template" id="favorite_item_screen">
+    <div class="header">
+        <div class="left_header_button back"></div>
+        <span>Details</span>
+        <div class="right_header_button" id="favorites"></div>
+    </div>
+    <div class="details">
+        <div class="<% if(details.isFavorite) { %> active <% } %>"></div>
+        <img src="<%= details.img_url %>" alt="home"/>
+        <span><%= details.summary %></span>
+    </div>
+</script>
+
 </body>
 <script type="text/javascript">
     Array.prototype.removeFromArray = function(from, to) {
@@ -155,6 +169,15 @@
 
 
 //    -------------------------------MODELS--------------------------------
+    var State = Backbone.Model.extend({
+        defaults: {
+            current: {
+                url: null,
+                selector: null
+            },
+            previous: []
+        }
+    });
     var City = Backbone.Model.extend({
         initialize: function(elem){
            var favorites = detailScreen.getFavorites();
@@ -203,6 +226,7 @@
 
     var listings = new Listings();
     var locations = new Locations();
+    var states = new State();
 
 
 
@@ -212,6 +236,10 @@
         className: 'main-screen',
         template: _.template($('#main_screen').html()),
         render: function(val){
+            states.attributes.current = {selector: null, url: null};
+            states.attributes.previous.length = 0;
+            states.attributes.previous.push(states.get('current'));
+            states.set({current: {url: '', selector: '.main_screen'}});
             var toTemplate = {recentSearch: this.getRecentSearches() ? this.getRecentSearches() : null, error: null, locations: null};
             if(val && val.error){
                 toTemplate.error = val;
@@ -270,6 +298,8 @@
             console.log(thrownError)
         },
         goToFavorites: function(){
+            states.attributes.previous.push(states.get('current'));
+            states.set({current: {url: 'favoriteView', selector: '.favorite_screen'}});
             router.navigate("favoriteView", {trigger: true})
         },
         searchByCurrentLocation: function(){
@@ -362,6 +392,8 @@
                     if(this.listings.length){
                         if(!coordinates) this.addToRecentSearches(place, totalRes);
                         this.listings.totalResults = totalRes;
+                        states.attributes.previous.push(states.get('current'));
+                        states.set({current: {url: 'listView', selector: '.list_screen'}});
                         router.navigate("listView", {trigger: true});
                     }else{
                         this.render({error: 1});
@@ -470,7 +502,6 @@
             }
         },
         goBack: function(){
-//            router.navigate("", {trigger: true});
             console.log('------------------------------')
             this.back = true;
             window.history.back();
@@ -488,6 +519,9 @@
         clickOnItem: function(e){
             var target = $(e.currentTarget),
                 id = target.data('guid');
+
+            states.attributes.previous.push(states.get('current'));
+            states.set({current: {url: 'detailView/' + id, selector: '.detail_screen'}});
 
             router.navigate("detailView/" + id, {trigger: true});
         },
@@ -510,7 +544,6 @@
         el: '.item_screen',
         template: _.template($('#item_screen').html()),
         render: function(id){
-
             var isFavorite = null, self = this;
             if (this.getFavorites()){
                 isFavorite = this.isFavorite(this.getFavorites(), id);
@@ -538,11 +571,17 @@
         },
         events: {
             'click .add_to_favorite': 'addToFavorite',
-            'click .back': 'goBack'
+            'click .back': 'goBack',
+            'click #favorites': 'goToFavorites'
         },
         goBack: function(){
             this.back = true;
             window.history.back();
+        },
+        goToFavorites: function(){
+            states.attributes.previous.push(states.get('current'));
+            states.set({current: {url: 'favoriteView', selector: '.favorite_screen'}});
+            router.navigate("favoriteView", {trigger: true})
         },
         isFavorite: function(favorites, id){
             var isFavorite = false;
@@ -613,20 +652,106 @@
         },
         goBack: function(){
             this.back = true;
-            window.history.back();
+            var previous = states.get('previous');
+            console.log(previous[previous.length - 1]);
+            router.navigate(previous[previous.length - 1]['url'], {trigger: true});
+//            window.history.back();
         },
         clickOnItem: function(e){
             var target = $(e.currentTarget),
                     id = target.data('guid');
 
-            router.navigate("detailView/" + id, {trigger: true});
+            states.attributes.previous.push(states.get('current'));
+            states.set({current: {url: 'favoriteDetailView/' + id, selector: '.favorite_detail_screen'}});
+
+            router.navigate("favoriteDetailView/" + id, {trigger: true});
+        }
+    });
+
+    var FavoriteDetailScreen = Backbone.View.extend({
+        el: '.favorite_item_screen',
+        template: _.template($('#favorite_item_screen').html()),
+        render: function(id){
+            var isFavorite = null, self = this;
+            if (this.getFavorites()){
+                isFavorite = this.isFavorite(this.getFavorites(), id);
+            }
+            console.log(id)
+            if(isFavorite){
+                var pos = mainScreen.findObjPositionInArray(this.getFavorites(), id, 'guid');
+                this.openDetail = this.getFavorites()[pos];
+            }else{
+                this.openDetail = listings.where({guid: id})[0].attributes;
+            }
+            $('.list_screen').removeClass('animate');
+            $('.list_screen').addClass('left');
+            $('.favorite_screen').removeClass('animate');
+            $('.favorite_screen').addClass('left');
+            this.el.classList.remove('right');
+            this.el.classList.add('animate');
+            var toTemplate = {details: this.openDetail, isFavorite: isFavorite};
+//            if(listScreen.back){
+//                toTemplate.back = true;
+//                this.template(toTemplate)
+//            }
+            this.$el.html(this.template(toTemplate));
+
+            listScreen.back = false;
         },
+        events: {
+            'click .add_to_favorite': 'addToFavorite',
+            'click .back': 'goBack',
+            'click #favorites': 'goToFavorites'
+        },
+        goBack: function(){
+            this.back = true;
+            window.history.back();
+        },
+        goToFavorites: function(){
+            window.history.back();
+        },
+        isFavorite: function(favorites, id){
+            var isFavorite = false;
+            favorites.forEach(function(obj){
+                if(obj.guid === id){
+                    isFavorite = true;
+                }
+            });
+            return isFavorite;
+        },
+        getFavorites: function(){
+            return JSON.parse(window.localStorage.getItem('favorites'));
+        },
+        addToFavorite: function(e){
+            var target = $(e.currentTarget),
+                    favorite = this.openDetail,
+                    favorites = this.getFavorites(),
+                    model = listings.where({guid: this.openDetail.guid});
+
+            if(!favorites){
+                favorites = [];
+            }
+            if(!target.hasClass('active')){
+                target.addClass('active');
+                favorites.unshift(favorite);
+                model[0].attributes.isFavorite = true;
+                window.localStorage.setItem('favorites', JSON.stringify(favorites));
+            }else{
+                var positionInArray = mainScreen.findObjPositionInArray(favorites, favorite.guid, 'guid');
+                target.removeClass('active');
+                favorites.splice(positionInArray, 1);
+                model[0].attributes.isFavorite = null;
+                window.localStorage.setItem('favorites', JSON.stringify(favorites));
+            }
+
+        }
     });
 
     var mainScreen = new MainScreen();
     var listScreen = new ListScreen();
     var detailScreen = new DetailScreen();
     var favoritesScreen = new FavoriteScreen();
+    var favoriteDetailScreen = new FavoriteDetailScreen();
 
 
 //    -------------------------------ROUTERS--------------------------------
@@ -635,16 +760,17 @@
             '' : 'home',
             'listView' : 'list_screen',
             'detailView/:id' : 'detail_screen',
-            'favoriteView' : 'favorite_screen'
-        },
-        initialize: function() {
-            this.listenTo( Backbone, 'page-transition', this.animate );
+            'favoriteView' : 'favorite_screen',
+            'favoriteDetailView/:id' : 'favorite_detail_screen'
         },
         animate: function( href, transition, direction ) {
             // Do something interesting with this
         },
         detail_screen: function(id){
             detailScreen.render(id)
+        },
+        favorite_detail_screen: function(id){
+            favoriteDetailScreen.render(id);
         }
     });
     var router = new Router();

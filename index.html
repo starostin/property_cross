@@ -175,7 +175,9 @@
                 url: null,
                 selector: null
             },
-            previous: []
+            previous: [],
+            forward: true
+
         }
     });
     var City = Backbone.Model.extend({
@@ -236,25 +238,18 @@
         className: 'main-screen',
         template: _.template($('#main_screen').html()),
         render: function(val){
-            states.attributes.current = {selector: null, url: null};
-            states.attributes.previous.length = 0;
-            states.attributes.previous.push(states.get('current'));
-            states.set({current: {url: '', selector: '.main_screen'}});
+//            states.attributes.current = {selector: null, url: null};
+//            states.attributes.previous.length = 0;
+            if(!listScreen.back && !favoritesScreen.back){
+                states.attributes.previous.push(states.get('current'));
+                states.set({current: {url: '', selector: '.main_screen'}});
+            }
             var toTemplate = {recentSearch: this.getRecentSearches() ? this.getRecentSearches() : null, error: null, locations: null};
             if(val && val.error){
                 toTemplate.error = val;
             }else if(val === 'locations'){
                 toTemplate.locations = this.locations.toJSON();
             }
-            if(listScreen.back){
-                $('.list_screen').removeClass('animate');
-                $('.list_screen').addClass('right');
-            }else if(favoritesScreen.back){
-                $('.favorite_screen').removeClass('animate');
-                $('.favorite_screen').addClass('right');
-            }
-            this.el.classList.remove('left');
-            this.el.classList.add('animate')
             this.$el.html(this.template(toTemplate));
             var recentSearches = this.$el.find('.recent_search');
             var delay = 0;
@@ -279,6 +274,8 @@
             $('.scrollable').css('height', height);
             var myScroll = new IScroll('.scrollable', { freeScroll: true, click: true});
             this.$el.find('.transition').addClass('animate');
+            listScreen.back = false;
+            favoritesScreen.back = false;
             return this;
         },
         initialize: function(){
@@ -298,6 +295,7 @@
             console.log(thrownError)
         },
         goToFavorites: function(){
+            states.attributes.forward = true;
             states.attributes.previous.push(states.get('current'));
             states.set({current: {url: 'favoriteView', selector: '.favorite_screen'}});
             router.navigate("favoriteView", {trigger: true})
@@ -392,6 +390,7 @@
                     if(this.listings.length){
                         if(!coordinates) this.addToRecentSearches(place, totalRes);
                         this.listings.totalResults = totalRes;
+                        states.attributes.forward = true;
                         states.attributes.previous.push(states.get('current'));
                         states.set({current: {url: 'listView', selector: '.list_screen'}});
                         router.navigate("listView", {trigger: true});
@@ -435,36 +434,32 @@
         el: '.list_screen',
         template: _.template($('#list_screen').html()),
         render: function(){
+            console.log('++++++++++++++++++++++++++++++++')
             var self = this,
             toTemplate = {listings: listings};
-            if(detailScreen.back){
-                $('.item_screen').removeClass('animate');
-                $('.item_screen').addClass('right');
-                this.el.classList.remove('left');
-                this.el.classList.add('animate');
-            }else{
-                $('.main_screen').removeClass('animate');
-                $('.main_screen').addClass('left');
-                this.el.classList.remove('right');
-                this.el.classList.add('animate');
-            }
             this.$el.html(this.template(toTemplate));
             self.myScroll = new IScroll('.wrap', {
-                tap:true,
+                tap: true,
                 click: true,
                 probeType: 3
             });
             self.myScroll.on('scroll', self.updatePosition);
             self.myScroll.on('beforeScrollStart', self.getListHeight);
-//            this.$el.find('.transition').addClass('animate');
             self.checkOnFavorites();
-            detailScreen.back = false;
         },
         events: {
             'click .list_item': 'clickOnItem',
-            'click .back': 'goBack'
+            'click .back': 'goBack',
+            'click #favorites': 'goToFavorites',
+            'click body': 'asd'
+        },
+        asd: function(){
+            console.log(')))(()()()())(()()()()()')
         },
         flag: 0,
+        goToFavorites: function(){
+            mainScreen.goToFavorites();
+        },
         updateList: function(moreItems){
             var list = '', self = this, currentResult = +this.$el.find('.current_result').text();
             for(var i = 0; i < moreItems.length; i++){
@@ -502,9 +497,11 @@
             }
         },
         goBack: function(){
-            console.log('------------------------------')
             this.back = true;
-            window.history.back();
+            var previous = states.get('previous');
+            states.attributes.forward = false;
+            router.navigate(previous[previous.length - 1]['url'], {trigger: true});
+//            window.history.back();
             listings.coordinates = null;
 
         },
@@ -519,9 +516,9 @@
         clickOnItem: function(e){
             var target = $(e.currentTarget),
                 id = target.data('guid');
-
+            states.attributes.forward = true;
             states.attributes.previous.push(states.get('current'));
-            states.set({current: {url: 'detailView/' + id, selector: '.detail_screen'}});
+            states.set({current: {url: 'detailView/' + id, selector: '.item_screen'}});
 
             router.navigate("detailView/" + id, {trigger: true});
         },
@@ -554,20 +551,8 @@
             }else{
                 this.openDetail = listings.where({guid: id})[0].attributes;
             }
-            $('.list_screen').removeClass('animate');
-            $('.list_screen').addClass('left');
-            $('.favorite_screen').removeClass('animate');
-            $('.favorite_screen').addClass('left');
-            this.el.classList.remove('right');
-            this.el.classList.add('animate');
             var toTemplate = {details: this.openDetail, isFavorite: isFavorite};
-//            if(listScreen.back){
-//                toTemplate.back = true;
-//                this.template(toTemplate)
-//            }
             this.$el.html(this.template(toTemplate));
-
-            listScreen.back = false;
         },
         events: {
             'click .add_to_favorite': 'addToFavorite',
@@ -576,12 +561,13 @@
         },
         goBack: function(){
             this.back = true;
-            window.history.back();
+            var previous = states.get('previous');
+            states.attributes.forward = false;
+            router.navigate(previous[previous.length - 1]['url'], {trigger: true});
+//            window.history.back();
         },
         goToFavorites: function(){
-            states.attributes.previous.push(states.get('current'));
-            states.set({current: {url: 'favoriteView', selector: '.favorite_screen'}});
-            router.navigate("favoriteView", {trigger: true})
+            mainScreen.goToFavorites();
         },
         isFavorite: function(favorites, id){
             var isFavorite = false;
@@ -626,24 +612,12 @@
         template: _.template($('#favorite_screen').html()),
         render: function(){
             var toTemplate = {favorites: detailScreen.getFavorites(), back: null};
-            if(detailScreen.back){
-                $('.item_screen').removeClass('animate');
-                $('.item_screen').addClass('right');
-                this.el.classList.remove('left');
-                this.el.classList.add('animate');
-            } else {
-                $('.main_screen').removeClass('animate');
-                $('.main_screen').addClass('left');
-                this.el.classList.remove('right');
-                this.el.classList.add('animate');
-            }
             this.$el.html(this.template(toTemplate));
             var myScrollFavorites = new IScroll('.wrap', {
                 tap:true,
                 click: true,
                 probeType: 3
             });
-//            this.$el.find('.transition').addClass('animate');
             detailScreen.back = false;
         },
         events: {
@@ -653,7 +627,7 @@
         goBack: function(){
             this.back = true;
             var previous = states.get('previous');
-            console.log(previous[previous.length - 1]);
+            states.attributes.forward = false;
             router.navigate(previous[previous.length - 1]['url'], {trigger: true});
 //            window.history.back();
         },
@@ -661,8 +635,9 @@
             var target = $(e.currentTarget),
                     id = target.data('guid');
 
+            states.attributes.forward = true;
             states.attributes.previous.push(states.get('current'));
-            states.set({current: {url: 'favoriteDetailView/' + id, selector: '.favorite_detail_screen'}});
+            states.set({current: {url: 'favoriteDetailView/' + id, selector: '.favorite_item_screen'}});
 
             router.navigate("favoriteDetailView/" + id, {trigger: true});
         }
@@ -676,24 +651,13 @@
             if (this.getFavorites()){
                 isFavorite = this.isFavorite(this.getFavorites(), id);
             }
-            console.log(id)
             if(isFavorite){
                 var pos = mainScreen.findObjPositionInArray(this.getFavorites(), id, 'guid');
                 this.openDetail = this.getFavorites()[pos];
             }else{
                 this.openDetail = listings.where({guid: id})[0].attributes;
             }
-            $('.list_screen').removeClass('animate');
-            $('.list_screen').addClass('left');
-            $('.favorite_screen').removeClass('animate');
-            $('.favorite_screen').addClass('left');
-            this.el.classList.remove('right');
-            this.el.classList.add('animate');
             var toTemplate = {details: this.openDetail, isFavorite: isFavorite};
-//            if(listScreen.back){
-//                toTemplate.back = true;
-//                this.template(toTemplate)
-//            }
             this.$el.html(this.template(toTemplate));
 
             listScreen.back = false;
@@ -705,10 +669,13 @@
         },
         goBack: function(){
             this.back = true;
-            window.history.back();
+            var previous = states.get('previous');
+            states.attributes.forward = false;
+            router.navigate(previous[previous.length - 1]['url'], {trigger: true});
+//            window.history.back();
         },
         goToFavorites: function(){
-            window.history.back();
+            this.goBack();
         },
         isFavorite: function(favorites, id){
             var isFavorite = false;
@@ -763,15 +730,36 @@
             'favoriteView' : 'favorite_screen',
             'favoriteDetailView/:id' : 'favorite_detail_screen'
         },
-        animate: function( href, transition, direction ) {
-            // Do something interesting with this
+        initialize: function() {
+            //keep count of number of routes handled by your application
+            Backbone.history.on('route',this.animate, this);
         },
         detail_screen: function(id){
             detailScreen.render(id)
         },
         favorite_detail_screen: function(id){
             favoriteDetailScreen.render(id);
-        }
+        },
+        animate: function() {
+            var previous = states.get('previous');
+            console.log('=================================')
+            console.log(states)
+            if(states.attributes.previous.length > 1 && states.attributes.forward){
+                $(states.attributes.previous[states.attributes.previous.length-1].selector).removeClass('animate');
+                $(states.attributes.previous[states.attributes.previous.length-1].selector).addClass('left');
+                $(states.attributes.current.selector).removeClass('right');
+                $(states.attributes.current.selector).addClass('animate');
+            }else if(!states.attributes.forward){
+                console.log('-------------------------------------')
+                console.log(states)
+                $(states.attributes.current.selector).removeClass('animate');
+                $(states.attributes.current.selector).addClass('right');
+                $(states.attributes.previous[states.attributes.previous.length-1].selector).removeClass('left');
+                $(states.attributes.previous[states.attributes.previous.length-1].selector).addClass('alimate');
+                states.set({current: {url: previous[previous.length - 1]['url'], selector: previous[previous.length - 1]['selector']}});
+                states.attributes.previous.length = states.attributes.previous.length - 1;
+            }
+        },
     });
     var router = new Router();
     router.on('route:home', function(){

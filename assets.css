@@ -645,3 +645,14 @@ input{
     vertical-align: middle;
     line-height: 30px;
 }
+.details{
+    position: relative;
+}
+.add_to_favorite{
+    position: absolute;
+    left: 80%;
+    top: 5%;
+    width: 50px;
+    height: 50px;
+    background: red;
+}

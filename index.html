@@ -277,6 +277,7 @@
             this.$el.find('.transition').addClass('animate');
             listScreen.back = false;
             favoritesScreen.back = false;
+            this.clicked = false;
             return this;
         },
         initialize: function(){
@@ -296,10 +297,13 @@
             console.log(thrownError)
         },
         goToFavorites: function(){
-            states.attributes.forward = true;
-            states.attributes.previous.push(states.get('current'));
-            states.set({current: {url: 'favoriteView', selector: '.favorite_screen', view: this}});
-            router.navigate("favoriteView", {trigger: true})
+            if(!this.clicked){
+                states.attributes.forward = true;
+                states.attributes.previous.push(states.get('current'));
+                states.set({current: {url: 'favoriteView', selector: '.favorite_screen', view: this}});
+                router.navigate("favoriteView", {trigger: true})
+            }
+            this.clicked = true;
         },
         searchByCurrentLocation: function(){
             var self = this, latitude='', longtitude='', coordinates;
@@ -391,10 +395,13 @@
                     if(this.listings.length){
                         if(!coordinates) this.addToRecentSearches(place, totalRes);
                         this.listings.totalResults = totalRes;
-                        states.attributes.forward = true;
-                        states.attributes.previous.push(states.get('current'));
-                        states.set({current: {url: 'listView', selector: '.list_screen', view: this}});
-                        router.navigate("listView", {trigger: true});
+                        if(!this.clicked){
+                            states.attributes.forward = true;
+                            states.attributes.previous.push(states.get('current'));
+                            states.set({current: {url: 'listView', selector: '.list_screen', view: this}});
+                            router.navigate("listView", {trigger: true});
+                        }
+                        this.clicked = true;
                     }else{
                         this.render({error: 1});
                     }
@@ -456,7 +463,13 @@
         },
         flag: 0,
         goToFavorites: function(){
-            mainScreen.goToFavorites();
+            if(!this.clicked){
+                states.attributes.forward = true;
+                states.attributes.previous.push(states.get('current'));
+                states.set({current: {url: 'favoriteView', selector: '.favorite_screen', view: this}});
+                router.navigate("favoriteView", {trigger: true})
+            }
+            this.clicked = true;
         },
         updateList: function(moreItems){
             var list = '', self = this, currentResult = +this.$el.find('.current_result').text();
@@ -495,10 +508,13 @@
             }
         },
         goBackList: function(){
-            var previous = states.get('previous');
-            states.attributes.forward = false;
-            router.navigate(previous[previous.length - 1]['url'], {trigger: true});
-            listings.coordinates = null;
+            if(!this.clicked){
+                var previous = states.get('previous');
+                states.attributes.forward = false;
+                router.navigate(previous[previous.length - 1]['url'], {trigger: true});
+                listings.coordinates = null;
+            }
+            this.clicked = true;
             this.back = false;
 //            window.history.back();
 
@@ -522,8 +538,6 @@
                 router.navigate("detailView/" + id, {trigger: true});
             }
             this.clicked = true;
-
-
         },
         showMore: function(){
             var page = listings.page + 1;
@@ -556,6 +570,7 @@
             }
             var toTemplate = {details: this.openDetail, isFavorite: isFavorite};
             this.$el.html(this.template(toTemplate));
+            this.clicked = false;
         },
         events: {
             'click .add_to_favorite': 'addToFavorite',
@@ -563,13 +578,22 @@
             'click #favorites': 'goToFavorites'
         },
         goBackItem: function(){
-           var previous = states.get('previous');
-           states.attributes.forward = false;
-           router.navigate(previous[previous.length - 1]['url'], {trigger: true});
+            if(!this.clicked){
+                var previous = states.get('previous');
+                states.attributes.forward = false;
+                router.navigate(previous[previous.length - 1]['url'], {trigger: true});
+            }
+           this.clicked = true;
 //            window.history.back();
         },
         goToFavorites: function(){
-            mainScreen.goToFavorites();
+            if(!this.clicked){
+                states.attributes.forward = true;
+                states.attributes.previous.push(states.get('current'));
+                states.set({current: {url: 'favoriteView', selector: '.favorite_screen', view: this}});
+                router.navigate("favoriteView", {trigger: true})
+            }
+            this.clicked = true;
         },
         isFavorite: function(favorites, id){
             var isFavorite = false;
@@ -628,10 +652,13 @@
             'click .list_item': 'clickOnItem'
         },
         goBack: function(){
-            var previous = states.get('previous');
-            states.attributes.forward = false;
-            router.navigate(previous[previous.length - 1]['url'], {trigger: true});
-            this.back = false;
+            if(!this.clicked){
+                var previous = states.get('previous');
+                states.attributes.forward = false;
+                router.navigate(previous[previous.length - 1]['url'], {trigger: true});
+            }
+           this.clicked = true;
+           this.back = false;
 //            window.history.back();
         },
         clickOnItem: function(e){
@@ -663,6 +690,7 @@
             }
             var toTemplate = {details: this.openDetail, isFavorite: isFavorite};
             this.$el.html(this.template(toTemplate));
+            this.clicked = false;
         },
         events: {
             'click .add_to_favorite': 'addToFavorite',
@@ -670,9 +698,12 @@
             'click #favorites': 'goToFavorites'
         },
         goBack: function(){
-            var previous = states.get('previous');
-            states.attributes.forward = false;
-            router.navigate(previous[previous.length - 1]['url'], {trigger: true});
+            if(!this.clicked){
+                var previous = states.get('previous');
+                states.attributes.forward = false;
+                router.navigate(previous[previous.length - 1]['url'], {trigger: true});
+            }
+            this.clicked = true;
 //            window.history.back();
         },
         goToFavorites: function(){

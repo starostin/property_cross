@@ -452,7 +452,7 @@
             });
             self.myScroll.on('scroll', self.updatePosition);
             self.myScroll.on('beforeScrollStart', self.getListHeight);
-//            self.checkOnFavorites();
+            self.checkOnFavorites();
             this.back = true;
             this.clicked = false;
         },
@@ -724,7 +724,8 @@
         addToFavorite: function(e){
             var target = $(e.currentTarget),
                     favorite = this.openDetail,
-                    favorites = this.getFavorites();
+                    favorites = this.getFavorites(),
+                    model = listings.where({guid: this.openDetail.guid});
 
             if(!favorites){
                 favorites = [];
@@ -732,11 +733,17 @@
             if(!target.hasClass('active')){
                 target.addClass('active');
                 favorites.unshift(favorite);
+                if(model){
+                    model[0].attributes.isFavorite = true;
+                }
                 window.localStorage.setItem('favorites', JSON.stringify(favorites));
             }else{
                 var positionInArray = mainScreen.findObjPositionInArray(favorites, favorite.guid, 'guid');
                 target.removeClass('active');
                 favorites.splice(positionInArray, 1);
+                if(model){
+                    model[0].attributes.isFavorite = false;
+                }
                 window.localStorage.setItem('favorites', JSON.stringify(favorites));
             }
 

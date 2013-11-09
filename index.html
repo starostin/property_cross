@@ -59,26 +59,19 @@
         <div class="right_header_button" id="info"></div>
     </div>
     <p class="tip">Use the form below to search for houses to buy. You can search by place-name, postcode or click 'My location', to search in your current location</p>
-    <input type="text" id="place" value="<%= this.inputVal %>"/>
-    <div class="button_set">
-        <div class="btn btn_left" id="search">Search</div>
-        <div class="btn btn_right" id="my_location">Go</div>
+    <div class="input">
+        <div class='left_inp'></div>
+        <input type="text" id="place" value="<%= this.inputVal %>" placeholder="Search"/>
+        <div class='right_inp'></div>
+        <div class="btn btn_left" id="my_location"></div>
+        <div class="btn btn_right" id="search"></div>
         <div class="clear"></div>
     </div>
-    <% if (error) { %>
-        <% if(error.error === 1) { %>
-            <div class="error">There were no properties found for the given location.</div>
-        <% }else if(error.error === 2) { %>
-            <div class="error">The location given was not recognised.</div>
-        <% }else if(error.error === 3) { %>
-            <div class="error">An error occurred while searching. Please check your network connection and try again.</div>
-        <% }else if(error.error === 4) { %>
-            <div class="error">The use of location is currently disabled.</div>
-        <% }else if(error.error === 5) { %>
-            <div class="error">Unable to detect current location. Please ensure location is turned on in your phone settings and try again.</div>
-        <% } %>
-    <% } %>
+    <div class="for_error"></div>
     <% if (locations) {%>
+    <div class="title">
+        Nearest locations
+    </div>
     <div class="scrollable">
         <ul class="list_on_main">
             <% _.each(locations, function(loc) { %>
@@ -87,10 +80,13 @@
         </ul>
     </div>
     <% } else if (recentSearch && recentSearch.length) { %>
+    <div class="title">
+        Recent searches
+    </div>
     <div class="scrollable">
         <ul class="list_on_main">
             <% _.each(recentSearch, function(elem) { %>
-            <li class="recent_search" data-placename="<%= elem.place %>"><span class="place_title"><%= elem.longName %></span><span class="count">(<%= elem.totalRes %>)</span></li>
+            <li class="recent_search" data-placename="<%= elem.place %>"><span class="place_title"><%= elem.longName %></span><span class="count"><%= elem.totalRes %></span></li>
             <% }); %>
         </ul>
     </div>
@@ -239,19 +235,42 @@
         className: 'main-screen',
         template: _.template($('#main_screen').html()),
         render: function(val){
-//            states.attributes.current = {selector: null, url: null};
-//            states.attributes.previous.length = 0;
             if(!listScreen.back && !favoritesScreen.back){
                 states.attributes.previous.push(states.get('current'));
                 states.set({current: {url: '', selector: '.main_screen', view: this}});
             }
-            var toTemplate = {recentSearch: this.getRecentSearches() ? this.getRecentSearches() : null, error: null, locations: null};
-            if(val && val.error){
-                toTemplate.error = val;
-            }else if(val === 'locations'){
+            var toTemplate = {recentSearch: this.getRecentSearches() ? this.getRecentSearches() : null, locations: null};
+            if(val === 'locations'){
                 toTemplate.locations = this.locations.toJSON();
             }
             this.$el.html(this.template(toTemplate));
+            if(toTemplate.recentSearch){
+                this.animateRecentSearches();
+            }
+            if(toTemplate.locations){
+                this.animateLocations();
+            }
+            var height = $(window).height() - $('.scrollable').offset().top;
+            $('.scrollable').css('height', height);
+            var myScroll = new IScroll('.scrollable', { freeScroll: true, click: true});
+            listScreen.back = false;
+            favoritesScreen.back = false;
+            this.clicked = false;
+            return this;
+        },
+        initialize: function(){
+            this.listings = listings;
+            this.locations = locations;
+        },
+        events: {
+            'click #search': 'search',
+            'click #my_location': 'searchByCurrentLocation',
+            'click li.recent_search': 'clickRecentSearch',
+            'click li.loc': 'clickLocation',
+            'click #favorites': 'goToFavorites',
+            'ajaxError': 'handleAjaxError'
+        },
+        animateRecentSearches: function(){
             var recentSearches = this.$el.find('.recent_search');
             var delay = 0;
             for(var i=0; i<=recentSearches.length; i++ ){
@@ -271,26 +290,41 @@
                     })
                 }
             }
-            var height = $(window).height() - $('.scrollable').offset().top;
-            $('.scrollable').css('height', height);
-            var myScroll = new IScroll('.scrollable', { freeScroll: true, click: true});
-            this.$el.find('.transition').addClass('animate');
-            listScreen.back = false;
-            favoritesScreen.back = false;
-            this.clicked = false;
-            return this;
         },
-        initialize: function(){
-            this.listings = listings;
-            this.locations = locations;
+        animateLocations: function(){
+            var locations = this.$el.find('.loc'),
+                delay = 0;
+            for(var j=0; j<=locations.length; j++ ){
+                delay = delay + 0.1;
+                if(locations[j]){
+                    $(locations[j]).css({
+                        '-webkit-transform': 'translate(0)',
+                        '-moz-transform': 'translate(0)',
+                        '-ms-transform': 'translate(0)',
+                        '-o-transform': 'translate(0)',
+                        'transform': 'translate(0)',
+                        '-webkit-transition': '0.5s ' + delay + 's',
+                        '-moz-transition': '0.5s' + delay + 's',
+                        '-ms-transition': '0.5s' + delay + 's',
+                        '-o-transition': '0.5s' + delay + 's',
+                        'transition': '0.5s' + delay + 's'
+                    })
+                }
+            }
         },
-        events: {
-            'click #search': 'search',
-            'click #my_location': 'searchByCurrentLocation',
-            'click li.recent_search': 'clickRecentSearch',
-            'click li.loc': 'clickLocation',
-            'click #favorites': 'goToFavorites',
-            'ajaxError': 'handleAjaxError'
+        handleErrors: function(val){
+            if(!val) return;
+            var errorMessage = '',
+                code = val.error;
+
+            switch (code) {
+                case 1: errorMessage = '<div class="error">There were no properties found for the given location.</div>'; break;
+                case 2: errorMessage =  '<div class="error">The location given was not recognised.</div>'; break;
+                case 3:  errorMessage =  '<div class="error">An error occurred while searching. Please check your network connection and try again.</div>'; break;
+                case 4: errorMessage =  '<div class="error">The use of location is currently disabled.</div>'; break;
+                case 5: errorMessage = '<div class="error">Unable to detect current location. Please ensure location is turned on in your phone settings and try again.</div>'; break;
+            }
+           this.$el.find('.for_error').html(errorMessage)
         },
         handleAjaxError: function (event, request, settings, thrownError) {
            console.log(request)
@@ -315,7 +349,7 @@
                 coordinates = latitude + ',' + longtitude;
                 self.search(null, null, coordinates);
             }, function(){
-                self.render({error: 5})
+                self.handleErrors({error: 5})
             }, {timeout: 5000});
         },
         getRecentSearches: function(){
@@ -385,7 +419,7 @@
                 totalRes = resp.response.total_results,
                 statusCode = resp.response.status_code;
 //            if(statusCode !== '200'){
-//                this.render({error: 3});
+//                this.handleErrors({error: 3});
 //                return;
 //            }
             switch(code){
@@ -403,7 +437,7 @@
                         }
                         this.clicked = true;
                     }else{
-                        this.render({error: 1});
+                        this.handleErrors({error: 1});
                     }
                     break;
                 case "200":
@@ -411,10 +445,10 @@
                     if(this.locations.length){
                         this.render('locations');
                     }else{
-                        this.render({error: 1});
+                        this.handleErrors({error: 1});
                     }
                     break;
-                default: this.render({error: 2});
+                default: this.handleErrors({error: 2});
             }
         },
         search: function(e, val, coordinates){

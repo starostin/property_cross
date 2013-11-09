@@ -1,10 +1,13 @@
 /*--------------------------SPINNER WIN8----------------------------------------*/
 body{
     overflow: hidden;
+    font-family: 'Roboto', sans-serif;
+    background: black;
 }
 .wrapper{
     position: static;
     overflow: hidden;
+    background: black;
 }
 #overlay{
     position: fixed;
@@ -436,7 +439,7 @@ body{
     height: 72px;
     line-height: 72px;
     text-align: center;
-    font: 30px 'Roboto', sans-serif;
+    font-size: 30px;
     color: #ebf0f1;
     background: #13151a;
     position: relative;
@@ -494,24 +497,56 @@ body{
     min-width: 300px;
 }
 .tip{
-    margin: 15px 2% 10px 2%;
-    font: 18px sans-serif;
+    padding: 15px 2% 10px 2%;
+    font-size: 18px;
+    background: #232424;
+    color: #bdc3c7;
+}
+.input{
+    height: 92px;
+    background: #26ae60;
 }
 input{
+    padding: 1%;
+    font-size: 33px;
+    color: white;
     box-sizing: border-box;
-    width: 96%;
-    border: 1px solid black;
+    width: 60%;
+    border: none;
+    border-bottom: 1px solid white;
     outline: none;
-    height: 25px;
+    background: #26ae60;
+    height: 65px;
     margin-bottom: 15px;
 }
-.button_set{
-    width: 70%;
-    margin: auto;
+.right_inp {
+    display: inline-block;
+    height: 5px;
+    border-left: 1px solid white;
+    position: absolute;
+    margin-top: 60px;
+    pointer-events: none;
+}
+.left_inp {
+    display: inline-block;
+    height: 5px;
+    border-left: 1px solid white;
+    position: absolute;
+    margin-top: 60px;
+    pointer-events: none;
+}
+input::after{
+    content: 'asd'
+}
+input::-moz-placeholder {
+    color: white;
+}
+input::-webkit-input-placeholder {
+    color: white;
 }
 .btn{
-    height: 50px;
-    width: 100px;
+    height: 100%;
+    width: 15%;
     background: red;
     line-height: 50px;
     color: white;
@@ -519,39 +554,57 @@ input{
     cursor: pointer;
 }
 .btn_left{
+    padding-left: 2%;
     float: left;
+    background: url(img/loc_icon.png) no-repeat center center;
 }
 .btn_right{
+    padding-right: 1%;
     float: right;
+    background: url(img/search_icon.png) no-repeat center center;
 }
 .clear{
     clear: both;
 }
+.title{
+    height: 46px;
+    font-weight: bold;
+    color: #2980b9;
+    text-transform: uppercase;
+    text-align: left;
+    line-height: 46px;
+    padding: 12px 2%;
+}
 .error{
-    width: 96%;
-    margin: 15px 0;
-    font: 18px sans-serif;
+    padding: 12px 2%;
+    font-size: 18px;
+    color: #e64c3c;
+    text-align: center;
+    background: #232424;
 }
 .scrollable{
-    width: 96%;
+    width: 100%;
     margin: auto;
     overflow: hidden;
 }
 .list_on_main li{
-    height: 50px;
-    line-height: 50px;
-    background: yellow;
-    margin-top: 20px;
+    height: 70px;
+    line-height: 70px;
+    background: #2980b9;
+    border-bottom: 1px solid black;
+    color: white;
+    padding: 18px 2%;
+    font-size: 24px;
 }
-.recent_search{
+.recent_search, .loc{
     position: relative;
     text-align: left;
     padding-left: 2%;
-    -webkit-transform: translate(-3000px);
-    -moz-transform: translate(-3000px);
-    -ms-transform: translate(-3000px);
-    -o-transform: translate(-3000px);
-    transform: translate(-3000px);
+    -webkit-transform: translate(-100%);
+    -moz-transform: translate(-100%);
+    -ms-transform: translate(-100%);
+    -o-transform: translate(-100%);
+    transform: translate(-100%);
 }
 .count{
     float: right;

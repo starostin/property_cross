@@ -379,8 +379,8 @@ body{
 /*-----------------------------------------------SPINNER SHOW MORE-----------------------------------------*/
 #floatingBarsG{
     position:absolute;
-    margin-top: -25px;
-    top: 50%;
+    margin-top: -29px;
+    top: 55%;
     left: 50%;
     margin-left: -80px;
     width:40px;
@@ -746,7 +746,7 @@ input::-webkit-input-placeholder {
 .scrollable{
     width: 100%;
     margin: auto;
-    overflow: hidden;
+    overflow: auto;
 }
 .list_on_main li{
     height: 70px;
@@ -782,13 +782,7 @@ input::-webkit-input-placeholder {
     bottom:0;
     left:0;
     width:100%;
-    overflow:hidden;
-}
-.scroll_list {
-    position:absolute;
-    width:100%;
-    padding:0;
-    z-index: -2;
+    overflow: auto;
 }
 .temp_wrap{
     width: 100%;

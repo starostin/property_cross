@@ -12,11 +12,6 @@
     <script src="libs/fastclick.js"></script>
     <link rel="stylesheet" href="reset.css"/>
     <link rel="stylesheet" href="assets.css"/>
-    <style type="text/css">
-        .active{
-            background-color: yellow;
-        }
-    </style>
 </head>
 <body>
 <div class="wrapper">
@@ -103,10 +98,30 @@
             <div class="scroll_list">
                 <ul>
                     <% _.each(listings.models, function(list) { %>
-                        <li class="list_item" data-guid="<%= list.attributes.guid %>"><div class="img" style="background: url(<%= list.attributes.thumb_url %>)"></div> <%= list.attributes.title%> <%  if(list.attributes.isFavorite){ %><div class="favor"></div><% } %></li>
+                        <li class="list_item" data-guid="<%= list.attributes.guid %>"><div class="img clearfix" style="background: url(<%= list.attributes.thumb_url %>)"></div><div class="text"><p class="price"><%= list.attributes.price_formatted%></p><p class="house_title"><%= list.attributes.title%></p> </div><%  if(list.attributes.isFavorite){ %><div class="favor"></div><% } %></li>
                     <% }); %>
                     <% if(listings.totalResults > 20 && listings.length !== listings.totalResults) { %>
-                    <li class="show_more"><span class="spinner"></span></li>
+                    <li class="show_more">
+                        <div id="floatingBarsG">
+                            <div class="blockG" id="rotateG_01">
+                            </div>
+                            <div class="blockG" id="rotateG_02">
+                            </div>
+                            <div class="blockG" id="rotateG_03">
+                            </div>
+                            <div class="blockG" id="rotateG_04">
+                            </div>
+                            <div class="blockG" id="rotateG_05">
+                            </div>
+                            <div class="blockG" id="rotateG_06">
+                            </div>
+                            <div class="blockG" id="rotateG_07">
+                            </div>
+                            <div class="blockG" id="rotateG_08">
+                            </div>
+                            <div class="spinner_label">Loading...</div>
+                        </div>
+                    </li>
                     <% } %>
                 </ul>
             </div>
@@ -120,9 +135,15 @@
             <div class="right_header_button" id="favorites"></div>
         </div>
         <div class="details">
-            <div class="add_to_favorite <% if(details.isFavorite) { %> active <% } %>"></div>
+            <div class="details_top">
+                <div class="text">
+                    <div class="price"><%= details.price_formatted %></div>
+                    <div class="house_title"><%= details.title %></div>
+                </div>
+                <div class="add_to_favorite <% if(details.isFavorite) { %> active <% } %>"></div>
+            </div>
             <img src="<%= details.img_url %>" alt="home"/>
-            <span><%= details.summary %></span>
+            <p class="desc"><%= details.summary %></p>
         </div>
 </script>
 
@@ -135,7 +156,7 @@
             <div class="scroll_list">
                 <ul class="favorites">
                     <% _.each(favorites, function(favor) { %>
-                    <li class="list_item" data-guid="<%= favor.guid %>"><div class="img" style="background: url(<%= favor.thumb_url %>)"></div><%= favor.title %> </li>
+                    <li class="list_item" data-guid="<%= favor.guid %>"><div class="img clearfix" style="background: url(<%= favor.thumb_url %>)"></div><div class="text"><p class="price"><%= favor.price_formatted %></p><p class="house_title"><%= favor.title %></p></div></li>
                     <% }); %>
                 </ul>
             </div>
@@ -149,9 +170,15 @@
         <div class="right_header_button" id="favorites"></div>
     </div>
     <div class="details">
-        <div class="add_to_favorite <% if(details.isFavorite) { %> active <% } %>"></div>
+        <div class="details_top">
+            <div class="text">
+                <div class="price"><%= details.price_formatted %></div>
+                <div class="house_title"><%= details.title %></div>
+            </div>
+            <div class="add_to_favorite <% if(details.isFavorite) { %> active <% } %>"></div>
+        </div>
         <img src="<%= details.img_url %>" alt="home"/>
-        <span><%= details.summary %></span>
+        <p class="desc"><%= details.summary %></p>
     </div>
 </script>
 
@@ -508,7 +535,7 @@
         updateList: function(moreItems){
             var list = '', self = this, currentResult = +this.$el.find('.current_result').text();
             for(var i = 0; i < moreItems.length; i++){
-                list += '<li class="list_item" data-guid="' + moreItems[i]['guid'] + '"><div class="img" style="background: url(' + moreItems[i]['thumb_url'] + ')"></div>' + moreItems[i]['title'] + '</li>';
+                list += '<li class="list_item" data-guid="' + moreItems[i]['guid'] + '"><div class="img clearfix" style="background: url(' + moreItems[i]['thumb_url'] + ')"></div><div class="text"><p class="price">' + moreItems[i]['price_formatted'] + '</p><p class="house_title">' + moreItems[i]['title'] + '</p></div></li>';
             }
             if(listings.length === listings.totalResults){
                 $('.show_more').replaceWith(list);
@@ -827,7 +854,7 @@
                 states.set({current: {url: previous[previous.length - 1]['url'], selector: previous[previous.length - 1]['selector'], view: previous[previous.length - 1]['view']}});
                 states.attributes.previous.length = states.attributes.previous.length - 1;
             }
-        },
+        }
     });
     var router = new Router();
     router.on('route:home', function(){

@@ -1,12 +1,16 @@
 /*--------------------------SPINNER WIN8----------------------------------------*/
 body{
-    overflow: hidden;
     font-family: 'Roboto', sans-serif;
     background: black;
 }
 .wrapper{
-    position: static;
     overflow: hidden;
+    width: 100%;
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    right: 0;
+    left: 0;
     background: black;
 }
 #overlay{
@@ -814,7 +818,7 @@ input::-webkit-input-placeholder {
     transform: translate(-100%);
 }
 .right{
-    -webkit-transform: translate(100%);
+    -webkit-transform: translate(100%, 0);
     -moz-transform: translate(3000px);
     -ms-transform: translate(3000px);
     -o-transform: translate(3000px);

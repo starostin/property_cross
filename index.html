@@ -151,13 +151,11 @@
             <span>Favorites</span>
         </div>
         <div class="wrap wrap_favor">
-            <div class="scroll_list">
                 <ul class="favorites">
                     <% _.each(favorites, function(favor) { %>
                     <li class="list_item" data-guid="<%= favor.guid %>"><div class="img clearfix" style="background: url(<%= favor.thumb_url %>)"></div><div class="text"><p class="price"><%= favor.price_formatted %></p><p class="house_title"><%= favor.title %></p></div></li>
                     <% }); %>
                 </ul>
-            </div>
         </div>
 </script>
 
@@ -682,11 +680,6 @@
         render: function(){
             var toTemplate = {favorites: detailScreen.getFavorites(), back: null};
             this.$el.html(this.template(toTemplate));
-            this.myScrollFavorites = new IScroll('.wrap_favor', {
-                tap:true,
-                click: true,
-                probeType: 3
-            });
             this.back = true;
             this.clicked = false;
         },

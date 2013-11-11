@@ -1,4 +1,7 @@
 /*--------------------------SPINNER WIN8----------------------------------------*/
+html, body{
+    height: 100%;
+}
 body{
     font-family: 'Roboto', sans-serif;
     background: black;
@@ -611,7 +614,7 @@ body{
 .header span{
     line-height: 72px;
 }
-.header:before, .header:after
+.header:before
 {
     content:"";
     position:absolute;
@@ -746,7 +749,7 @@ input::-webkit-input-placeholder {
 .scrollable{
     width: 100%;
     margin: auto;
-    overflow: auto;
+    overflow-y: scroll;
 }
 .list_on_main li{
     height: 70px;
@@ -777,12 +780,12 @@ input::-webkit-input-placeholder {
 /*}*/
 .wrap {
     position:absolute;
-    z-index:-2;
+    z-index:0;
     top:72px;
     bottom:0;
     left:0;
     width:100%;
-    overflow: auto;
+    overflow-y: scroll;
 }
 .temp_wrap{
     width: 100%;
@@ -831,14 +834,15 @@ input::-webkit-input-placeholder {
     float: left;
 }
 .list_item{
-    height: 60px;
+    min-height: 60px;
+    position: relative;
     /*line-height: 60px;*/
     border-bottom: 1px solid black;
     background: #3498db;
 }
 .text{
     padding: 8px 2%;
-    float: left;
+    display: inline-block;
 }
 .price{
     margin-bottom: 8px;
@@ -854,14 +858,13 @@ input::-webkit-input-placeholder {
     position: relative;
 }
 .favor{
-    margin-top: -8px;
-    margin-right: 3%;
+    margin-top: -12px;
     top: 50%;
-    position: relative;
+    right: 2%;
+    position: absolute;
     width: 24px;
     height: 24px;
     background: url(img/unfavor.png) no-repeat center center;
-    float: right;
 }
 .details{
     position: relative;

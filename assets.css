@@ -748,8 +748,17 @@ input::-webkit-input-placeholder {
 }
 .scrollable{
     width: 100%;
-    margin: auto;
-    overflow-y: scroll;
+    /*margin: auto;*/
+    overflow-y: auto;
+
+
+    position:absolute;
+    z-index:0;
+    /*top:400px;*/
+    bottom:0;
+    left:0;
+    width:100%;
+    overflow-y: auto;
 }
 .list_on_main li{
     height: 70px;
@@ -785,7 +794,7 @@ input::-webkit-input-placeholder {
     bottom:0;
     left:0;
     width:100%;
-    overflow-y: scroll;
+    overflow-y: auto;
 }
 .temp_wrap{
     width: 100%;

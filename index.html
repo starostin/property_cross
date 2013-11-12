@@ -275,7 +275,7 @@
             }
             var height = $(window).height() - $('.scrollable').offset().top;
             $('.scrollable').css('height', height);
-//            var myScroll = new IScroll('.scrollable', { freeScroll: true, click: true});
+            var myScroll = new IScroll('.scrollable', { freeScroll: true, click: true});
             listScreen.back = false;
             favoritesScreen.back = false;
             this.clicked = false;
@@ -290,12 +290,11 @@
             'click #my_location': 'searchByCurrentLocation',
             'click li.recent_search': 'clickRecentSearch',
             'click li.loc': 'clickLocation',
-            'click #favorites': 'goToFavorites',
-            'ajaxError': 'handleAjaxError'
+            'click #favorites': 'goToFavorites'
         },
         animateRecentSearches: function(){
-            var recentSearches = this.$el.find('.recent_search');
-            var delay = 0;
+            var recentSearches = this.$el.find('.recent_search'),
+                delay = 0;
             for(var i=0; i<=recentSearches.length; i++ ){
                 delay = delay + 0.1;
                 if(recentSearches[i]){
@@ -346,12 +345,12 @@
                 case 3:  errorMessage =  '<div class="error">An error occurred while searching. Please check your network connection and try again.</div>'; break;
                 case 4: errorMessage =  '<div class="error">The use of location is currently disabled.</div>'; break;
                 case 5: errorMessage = '<div class="error">Unable to detect current location. Please ensure location is turned on in your phone settings and try again.</div>'; break;
+                case 6: errorMessage = '<div class="error">Server error. Code ' + val.options.status + '</div>'; break;
             }
-           this.$el.find('.for_error').html(errorMessage)
-        },
-        handleAjaxError: function (event, request, settings, thrownError) {
-           console.log(request)
-            console.log(thrownError)
+           var top = parseInt(this.$el.find('.scrollable').css('top'), 10);
+           this.$el.find('.for_error').html(errorMessage);
+           var errorHeight = this.$el.find('.for_error').outerHeight(true);
+           this.$el.find('.scrollable').css('top', top+errorHeight)
         },
         goToFavorites: function(){
             if(!this.clicked){
@@ -489,6 +488,10 @@
                     self.listings.page = +resp.response.page;
                     console.log(resp)
                     $('.wrapper').find('#overlay').css('display', 'none');
+                },
+                error: function(col, resp, options){
+                    self.handleErrors({error: 6, options: resp});
+                    $('.wrapper').find('#overlay').css('display', 'none');
                 }
             })
         }
@@ -560,6 +563,8 @@
             this.clicked = true;
             this.back = false;
 //            window.history.back();
+
+
         },
         checkOnFavorites: function(){
             var favorites = detailScreen.getFavorites();

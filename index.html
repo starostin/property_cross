@@ -273,9 +273,8 @@
             if(toTemplate.locations){
                 this.animateLocations();
             }
-            var height = $(window).height() - $('.scrollable').offset().top;
-            $('.scrollable').css('height', height);
-            var myScroll = new IScroll('.scrollable', { freeScroll: true, click: true});
+            var top = this.$el.find('.header').outerHeight(true) + this.$el.find('.tip').outerHeight(true) + this.$el.find('.input').outerHeight(true) + this.$el.find('.title').outerHeight(true);
+            $('.scrollable').css('top', top);
             listScreen.back = false;
             favoritesScreen.back = false;
             this.clicked = false;
@@ -563,8 +562,6 @@
             this.clicked = true;
             this.back = false;
 //            window.history.back();
-
-
         },
         checkOnFavorites: function(){
             var favorites = detailScreen.getFavorites();

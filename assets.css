@@ -614,7 +614,7 @@ body{
 .header span{
     line-height: 72px;
 }
-.header:before, .header:after
+.header:before
 {
     content:"";
     position:absolute;
@@ -795,12 +795,6 @@ input::-webkit-input-placeholder {
     left:0;
     width:100%;
     overflow-y: auto;
-}
-.scroll_list {
-    position:absolute;
-    width:100%;
-    padding:0;
-    z-index: -2;
 }
 .temp_wrap{
     width: 100%;

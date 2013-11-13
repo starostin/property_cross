@@ -267,14 +267,14 @@
                 toTemplate.locations = this.locations.toJSON();
             }
             this.$el.html(this.template(toTemplate));
+            var top = this.$el.find('.header').outerHeight(true) + this.$el.find('.tip').outerHeight(true) + this.$el.find('.input').outerHeight(true) + this.$el.find('.title').outerHeight(true);
+            $('.scrollable').css('top', top);
             if(toTemplate.recentSearch){
                 this.animateRecentSearches();
             }
             if(toTemplate.locations){
                 this.animateLocations();
             }
-            var top = this.$el.find('.header').outerHeight(true) + this.$el.find('.tip').outerHeight(true) + this.$el.find('.input').outerHeight(true) + this.$el.find('.title').outerHeight(true);
-            $('.scrollable').css('top', top);
             this.tipHeight = this.$el.find('.tip').outerHeight(true);
             listScreen.back = false;
             favoritesScreen.back = false;

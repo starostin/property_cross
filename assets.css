@@ -749,20 +749,25 @@ input::-webkit-input-placeholder {
     text-align: center;
     background: #232424;
 }
-.scrollable{
-    width: 100%;
-    /*margin: auto;*/
-    overflow-y: auto;
-
-
-    position:absolute;
-    z-index:0;
-    /*top:400px;*/
-    bottom:0;
-    left:0;
-    width:100%;
-    overflow-y: auto;
+.main{
+    display: table;
 }
+.scrollable{
+    display: table-row;
+    height: 100%;
+    /*width: 100%;*/
+    /*margin: auto;*/
+    /*overflow-y: auto;*/
+
+
+    /*position:absolute;*/
+    /*z-index:0;*/
+    /*top:400px;*/
+    /*bottom:0;*/
+    /*left:0;*/
+    /*width:100%;*/
+}
+div{overflow:auto;height:100%;}
 .list_on_main li{
     height: 70px;
     line-height: 70px;

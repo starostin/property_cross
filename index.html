@@ -53,7 +53,7 @@
         <div class="right_header_button" id="favorites"></div>
         <div class="right_header_button" id="info"></div>
     </div>
-    <p class="tip showed">Use the form below to search for houses to buy. You can search by place-name, postcode or click 'My location', to search in your current location</p>
+    <p class="tip hiden">Use the form below to search for houses to buy. You can search by place-name, postcode or click 'My location', to search in your current location</p>
     <div class="input">
         <div class='left_inp'></div>
         <input type="text" id="place" value="<%= this.inputVal %>" placeholder="Search"/>
@@ -275,7 +275,6 @@
             if(toTemplate.locations){
                 this.animateLocations();
             }
-            this.tipHeight = this.$el.find('.tip').outerHeight(true);
             listScreen.back = false;
             favoritesScreen.back = false;
             this.clicked = false;
@@ -294,13 +293,7 @@
             'click #info': 'toggleInfo'
         },
         toggleInfo: function(){
-            var top = parseInt(this.$el.find('.scrollable').css('top'), 10);
-            this.$el.find('.tip').toggleClass('showed');
-            if(this.$el.find('.tip').hasClass('showed')){
-                this.$el.find('.scrollable').css('top', top + this.tipHeight)
-            }else{
-                this.$el.find('.scrollable').css('top', top - this.tipHeight)
-            }
+            this.$el.find('.tip').toggleClass('hiden');
         },
         animateRecentSearches: function(){
             var recentSearches = this.$el.find('.recent_search'),
@@ -357,15 +350,7 @@
                 case 5: errorMessage = '<div class="error">Unable to detect current location. Please ensure location is turned on in your phone settings and try again.</div>'; break;
                 case 6: errorMessage = '<div class="error">Server error. Code ' + val.options.status + '</div>'; break;
             }
-            var top = parseInt(this.$el.find('.scrollable').css('top'), 10), flag = false;
-            if(!this.$el.find('.error').length){
-               flag = true;
-            }
             this.$el.find('.for_error').html(errorMessage);
-            if(flag){
-                var errorHeight = this.$el.find('.for_error').outerHeight(true);
-                this.$el.find('.scrollable').css('top', top+errorHeight)
-            }
         },
         goToFavorites: function(){
             if(!this.clicked){

@@ -1,4 +1,11 @@
 /*--------------------------SPINNER WIN8----------------------------------------*/
+*{
+    -webkit-user-select:html;
+    -khtml-user-select:html;
+    -moz-user-select:html;
+    -ms-user-select:html;
+    user-select:html;
+}
 html, body{
     height: 100%;
 }
@@ -7,6 +14,7 @@ body{
     background: black;
 }
 .wrapper{
+
     overflow: hidden;
     width: 100%;
     position: absolute;
@@ -782,7 +790,15 @@ input::-webkit-input-placeholder {
     left:0;
     width:100%;
     overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
 }
+/*.list_item {*/
+    /*-webkit-transform: translateZ(0px);*/
+/*}*/
+
+/*.wrap > * {*/
+    /*-webkit-transform: translate3d(0,0,0);*/
+/*}*/
 .temp_wrap{
     width: 100%;
     position: absolute;

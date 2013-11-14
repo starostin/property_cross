@@ -185,9 +185,12 @@
         this.length = from < 0 ? this.length + from : from;
         return this.push.apply(this, rest);
     };
+    $(function() {
+        FastClick.attach(document.body);
+    });
 
 
-//    -------------------------------MODELS--------------------------------
+    //    -------------------------------MODELS--------------------------------
     var State = Backbone.Model.extend({
         defaults: {
             current: {
@@ -240,6 +243,10 @@
         model: City,
         parse: function(resp, xhr){
             return resp.response.listings;
+        },
+        fetch: function (options) {
+            options.cache = false;
+            return Backbone.Collection.prototype.fetch.call(this, options);
         }
     });
     var Locations = Backbone.Collection.extend({
@@ -479,6 +486,7 @@
             $('.wrapper').find('#overlay').removeAttr('style');
             this.inputVal = place;
             this.listings.fetch({
+                cache: false,
                 timeout: 5000,
                 data: coordinates ? {page: 1, centre_point: coordinates} : {page: 1, place_name: place},
                 success: function(col, resp){

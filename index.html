@@ -190,6 +190,10 @@
         return this.push.apply(this, rest);
     };
 
+    $(function() {
+        FastClick.attach(document.body);
+    });
+
 
 //    -------------------------------MODELS--------------------------------
     var State = Backbone.Model.extend({

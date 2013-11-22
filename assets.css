@@ -768,11 +768,11 @@ input::-webkit-input-placeholder {
     position: relative;
     text-align: left;
     padding-left: 2%;
-    -webkit-transform: translate(-100%);
-    -moz-transform: translate(-100%);
-    -ms-transform: translate(-100%);
-    -o-transform: translate(-100%);
-    transform: translate(-100%);
+    -webkit-transform: translate3d(-100%, 0, 0);
+    -moz-transform: translate3d(-100%, 0, 0);
+    -ms-transform: translate3d(-100%, 0, 0);
+    -o-transform: translate3d(-100%, 0, 0);
+    transform: translate3d(-100%, 0, 0);
 }
 .count{
     float: right;
@@ -789,7 +789,7 @@ input::-webkit-input-placeholder {
     bottom:0;
     left:0;
     width:100%;
-    overflow-y: auto;
+    overflow-y: hidden;
     -webkit-overflow-scrolling: touch;
 }
 /*.list_item {*/
@@ -821,25 +821,25 @@ input::-webkit-input-placeholder {
     transition: 0.5s;
 }
 .left{
-    -webkit-transform: translate(-100%);
-    -moz-transform: translate(-3000px);
-    -ms-transform: translate(-3000px);
-    -o-transform: translate(-3000px);
-    transform: translate(-100%);
+    -webkit-transform: translate3d(-100%, 0, 0);
+    -moz-transform: translate3d(-100%, 0, 0);
+    -ms-transform: translate3d(-100%, 0, 0);
+    -o-transform: translate3d(-100%, 0, 0);
+    transform: translate3d(-100%, 0, 0);
 }
 .right{
-    -webkit-transform: translate(100%, 0);
-    -moz-transform: translate(3000px);
-    -ms-transform: translate(3000px);
-    -o-transform: translate(3000px);
-    transform: translate(100%);
+    -webkit-transform: translate3d(100%, 0, 0);
+    -moz-transform: translate3d(100%, 0, 0);
+    -ms-transform: translate3d(100%, 0, 0);
+    -o-transform: translate3d(100%, 0, 0);
+    transform: translate3d(100%, 0, 0);
 }
 .animate{
-    -webkit-transform: translate(0);
-    -moz-transform: translate(0);
-    -ms-transform: translate(0);
-    -o-transform: translate(0);
-    transform: translate(0);
+    -webkit-transform: translate3d(0, 0, 0);
+    -moz-transform: translate3d(0, 0, 0);
+    -ms-transform: translate3d(0, 0, 0);
+    -o-transform: translate3d(0, 0, 0);
+    transform: translate3d(0, 0, 0);
 }
 .img{
     width: 60px;
@@ -920,7 +920,7 @@ input::-webkit-input-placeholder {
     font-size: 16px;
     padding: 15px 2%;
 }
-.hiden{
+.hidden{
    display: none;
 }
 .showed{

@@ -513,7 +513,7 @@
             var self = this,
             toTemplate = {listings: listings};
             this.$el.html(this.template(toTemplate));
-            this.$el.find('.wrap').on('scroll', this.scroll);
+//            this.$el.find('.wrap').on('scroll', this.scroll);
             self.checkOnFavorites();
             this.back = true;
             this.clicked = false;
@@ -826,6 +826,12 @@
         animate: function() {
             var previous = states.get('previous');
             if(states.attributes.previous.length > 1 && states.attributes.forward){
+                console.log(document.querySelector(states.attributes.current.selector))
+                document.querySelector(states.attributes.current.selector).addEventListener('webkitTransitionEnd', function() {
+                    $(this).find('.wrap').css('overflow', 'auto');
+                    this.querySelector('.wrap').addEventListener('scroll', listScreen.scroll);
+//                    $(this).find('.wrap').on('scroll', this.scroll);
+                });
                 states.attributes.previous[states.attributes.previous.length-1].view.undelegateEvents();
                 $(states.attributes.previous[states.attributes.previous.length-1].selector).removeClass('animate');
                 $(states.attributes.previous[states.attributes.previous.length-1].selector).addClass('left');
@@ -833,6 +839,7 @@
                 $(states.attributes.current.selector).addClass('animate');
             }else if(!states.attributes.forward){
                 states.attributes.current.view.delegateEvents();
+                this.querySelector('.wrap').addEventListener('scroll', listScreen.scroll);
                 $(states.attributes.current.selector).removeClass('animate');
                 $(states.attributes.current.selector).addClass('right');
                 $(states.attributes.previous[states.attributes.previous.length-1].selector).removeClass('left');
@@ -840,6 +847,7 @@
                 states.set({current: {url: previous[previous.length - 1]['url'], selector: previous[previous.length - 1]['selector'], view: previous[previous.length - 1]['view']}});
                 states.attributes.previous.length = states.attributes.previous.length - 1;
             }
+
         }
     });
     var router = new Router();

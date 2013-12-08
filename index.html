@@ -294,8 +294,7 @@
             'click #my_location': 'searchByCurrentLocation',
             'click li.recent_search': 'clickRecentSearch',
             'click li.loc': 'clickLocation',
-            'click #favorites': 'goToFavorites',
-            'ajaxError': 'handleAjaxError'
+            'click #favorites': 'goToFavorites'
         },
         animateRecentSearches: function(){
             var recentSearches = this.$el.find('.recent_search');
@@ -445,10 +444,7 @@
                 place = resp.request.location,
                 totalRes = resp.response.total_results,
                 statusCode = resp.response.status_code;
-//            if(statusCode !== '200'){
-//                this.handleErrors({error: 3});
-//                return;
-//            }
+
             switch(code){
                 case "100":
                 case "101":

@@ -300,7 +300,7 @@
             'click #info': 'toggleInfo'
         },
         toggleInfo: function(){
-            this.$el.find('.tip').toggleClass('hiden');
+            this.$el.find('.tip').toggleClass('hidden');
         },
         animateRecentSearches: function(){
             var recentSearches = this.$el.find('.recent_search'),
@@ -447,10 +447,7 @@
                 place = resp.request.location,
                 totalRes = resp.response.total_results,
                 statusCode = resp.response.status_code;
-//            if(statusCode !== '200'){
-//                this.handleErrors({error: 3});
-//                return;
-//            }
+
             switch(code){
                 case "100":
                 case "101":
@@ -513,7 +510,7 @@
             var self = this,
             toTemplate = {listings: listings};
             this.$el.html(this.template(toTemplate));
-//            this.$el.find('.wrap').on('scroll', this.scroll);
+            this.$el.find('.wrap').on('scroll', this.scroll);
             self.checkOnFavorites();
             this.back = true;
             this.clicked = false;
@@ -826,11 +823,10 @@
         animate: function() {
             var previous = states.get('previous');
             if(states.attributes.previous.length > 1 && states.attributes.forward){
-                console.log(document.querySelector(states.attributes.current.selector))
                 document.querySelector(states.attributes.current.selector).addEventListener('webkitTransitionEnd', function() {
                     $(this).find('.wrap').css('overflow', 'auto');
+                    if(this.querySelector('.wrap'))
                     this.querySelector('.wrap').addEventListener('scroll', listScreen.scroll);
-//                    $(this).find('.wrap').on('scroll', this.scroll);
                 });
                 states.attributes.previous[states.attributes.previous.length-1].view.undelegateEvents();
                 $(states.attributes.previous[states.attributes.previous.length-1].selector).removeClass('animate');
@@ -839,7 +835,6 @@
                 $(states.attributes.current.selector).addClass('animate');
             }else if(!states.attributes.forward){
                 states.attributes.current.view.delegateEvents();
-                this.querySelector('.wrap').addEventListener('scroll', listScreen.scroll);
                 $(states.attributes.current.selector).removeClass('animate');
                 $(states.attributes.current.selector).addClass('right');
                 $(states.attributes.previous[states.attributes.previous.length-1].selector).removeClass('left');
